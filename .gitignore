@@ -1,0 +1,7 @@
+.DS_Store
+# video clips: large, and usually not ours to redistribute
+clips/
+*.mp4
+*.mov
+*.m4v
+*.webm
