@@ -84,6 +84,8 @@
     font-size: 12.5px; line-height: 1.45; pointer-events: none; opacity: 0; transform: translateX(4px); transition: opacity .15s, transform .15s; }
   #tip.show { opacity: 1; transform: none; }
   #tip small { display: block; margin-top: 5px; color: var(--dim); font-size: 11.5px; }
+  textarea { width: 100%; margin: 4px 0; padding: 8px 10px; background: var(--field); color: var(--fg); border: 1px solid var(--edge); border-radius: 7px; font: inherit; resize: vertical; }
+  #langs button { padding: 4px 10px; }
 </style>
 </head>
 <body>
@@ -155,6 +157,12 @@
     <p class="hint">Then set "Use video" under Media for a look.</p>
   </details>
 
+  <details><summary data-tip="What the Words and Kanji looks say. Pick the languages, and add words of your own.">Words</summary>
+    <div id="langs" class="btns"></div>
+    <textarea id="myWords" rows="5" placeholder="Your own words, one per line" data-tip="Your words, one per line. They show while My words is on, and are saved with your library."></textarea>
+    <p class="hint">Turn every language off to show only your words. Kanji only and pacing are under Edit this look › Form.</p>
+  </details>
+
   <div id="edit"><h2 data-tip="Everything below changes the look on screen. Changes are drafts (●) until you Save.">Edit this look</h2></div>
 </aside>
 <div id="tip" class="ui" role="tooltip"></div>
@@ -184,7 +192,8 @@ function merge(a, b) {
 }
 
 /* ================= settings ================= */
-const G = { sens: 1, beatK: 1.5, intensity: 1, scale: 1 };
+const G = { sens: 1, beatK: 1.5, intensity: 1, scale: 1,
+  langs: { en: true, pt: true, de: true, ja: true, zh: true, es: true, hi: true, fr: true, ar: true, mine: true } }; // which words the Words looks use
 // set-scoped settings: rotation, theme and background moments travel with each set
 const ROT_DEFAULTS = { every: 32, drops: true, dropSens: 0.5, order: 'seq', style: 'random', fade: 1.2, theme: 'none', momStyle: 'auto', momTrigger: 'both', momLen: 8 };
 const rot = { on: true, ...ROT_DEFAULTS }; // the active set's settings, plus the global on/off
@@ -384,7 +393,7 @@ const PALETTES = {
 const W = (src, amt) => ({ src, amt });
 const BASE = {
   id: '', name: '', builtin: false, updated: 0,
-  form: { type: 'blob', size: 1, detail: 0, sides: 6, fly: 0 },
+  form: { type: 'blob', size: 1, detail: 0, sides: 6, fly: 0, script: 'all', pace: 2 },
   render: { type: 'filled', blend: 'normal', width: 2, trails: 0 },
   ripple: { type: 'rim', speed: 1, size: 1 },
   palette: 'aurora',
@@ -411,6 +420,8 @@ const BUILTINS = [
   def('mandala', 'Mandala', { form: { type: 'arches', detail: 0.4, sides: 8 }, render: { type: 'filled', width: 2.4 }, ripple: { type: 'shock', size: 1.2 }, palette: 'sunset', background: { type: 'solid' }, post: { bloom: 0.8, grain: 0.2 }, wiring: { push: W('bass', 0.5), rough: W('highs', 0.25), spin: W('mids', 0.7), sparks: W('beat', 0.3), chroma: W('beat', 0.5) } }),
   def('echo', 'Echo Kaleido', { form: { type: 'blob', detail: 0.6 }, render: { type: 'lines', blend: 'add', width: 2.2 }, ripple: { type: 'shock' }, palette: 'acid', symmetry: { type: 'kaleido', segments: 8 }, feedback: { amount: 0.85, zoom: 0.4, twist: 0.3 }, background: { type: 'solid' }, post: { bloom: 1 }, camera: { wander: 0.35 }, wiring: { drift: W('mids', 0.5), sparks: W('beat', 0.5), chroma: W('beat', 0.8) } }),
   def('nova', 'Supernova', { form: { type: 'petals', detail: 0.8, sides: 5 }, render: { type: 'lines', blend: 'add', width: 2.4 }, ripple: { type: 'shock', size: 1.6 }, palette: 'cyber', symmetry: { type: 'kaleido', segments: 12 }, feedback: { amount: 0.75, zoom: 0.7, twist: -0.4 }, background: { type: 'stars' }, post: { bloom: 1.3, grain: 0.3 }, camera: { wander: 0.2 }, wiring: { kick: W('beat', 0.3), push: W('bass', 1.2), zoom: W('beat', 0.35), sparks: W('beat', 1), warp: W('beat', 1), chroma: W('beat', 1) } }),
+  def('words', 'Words', { form: { type: 'words', detail: 0.5, fly: 0.5 }, render: { type: 'filled', width: 1.5 }, ripple: { type: 'shock', size: 1.2 }, palette: 'sunset', background: { type: 'noise' }, post: { bloom: 0.9, grain: 0.3, vignette: 0.7 }, camera: { wander: 0.15 }, wiring: { push: W('bass', 0.6), rough: W('highs', 0.5), spin: W('mids', 0.5), hue: W('mids', 0.6), zoom: W('beat', 0.15), sparks: W('beat', 0.3), chroma: W('beat', 0.6), warp: W('beat', 0.3), bgpulse: W('bass', 0.4) } }),
+  def('kanji', 'Kanji', { form: { type: 'words', script: 'kanji', detail: 0.4, fly: 0.3, pace: 4 }, render: { type: 'filled', width: 1.5 }, ripple: { type: 'shock', speed: 0.8, size: 1.4 }, palette: 'blood', background: { type: 'solid' }, feedback: { amount: 0.5, zoom: 0.5 }, post: { bloom: 1, grain: 0.45, vignette: 0.85 }, wiring: { push: W('bass', 0.5), rough: W('highs', 0.3), hue: W('none', 0), sparks: W('beat', 0.2), chroma: W('beat', 0.5), warp: W('beat', 0.5) } }),
 ];
 
 // Themes restyle whatever look is playing (colours, glow, grain, trails...) so a whole set feels consistent.
@@ -436,11 +447,13 @@ const opt = (...xs) => xs.map(x => Array.isArray(x) ? x : [x, x[0].toUpperCase()
 const SRC = opt('bass', 'mids', 'highs', 'beat', 'none');
 const SCHEMA = [
   ['Form', [
-    ['form.type', 'Shape', opt('blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', ['arches', 'Arch vortex']), 'The base shape: a blob, a tunnel of rings, ridgelines, a particle cloud, a dot grid, flower petals, or a vortex of rainbow arches.'],
+    ['form.type', 'Shape', opt('blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', ['arches', 'Arch vortex'], 'words'), 'The base shape: a blob, a tunnel of rings, ridgelines, a particle cloud, a dot grid, flower petals, a vortex of rainbow arches, or words in many languages.'],
     ['form.size', 'Size', [0.3, 1.6, 0.01], 'Overall size of the shape.'],
-    ['form.detail', 'Detail', [0, 1, 0.01], 'How much structure the shape has: more layers, rings, lines or points.'],
+    ['form.detail', 'Detail', [0, 1, 0.01], 'How much structure the shape has: more layers, rings, lines or points. For Words: how many smaller words float around.'],
     ['form.sides', 'Sides / petals', [3, 12, 1], 'Number of sides on each ring, petals on the flower, or arches per ring. Only affects Rings, Petals and Arch vortex.'],
-    ['form.fly', 'Fly-through (rings)', [-2, 6, 0.1], 'Speed of travel through the ring tunnel. Negative flies backwards. Only affects Rings.'],
+    ['form.fly', 'Fly-through', [-2, 6, 0.1], 'Speed of travel through the ring tunnel, or of floating words drifting towards you. Negative flies backwards. Only affects Rings and Words.'],
+    ['form.script', 'Words', opt(['all', 'All languages'], ['kanji', 'Kanji only']), 'All languages mixes the languages picked under Words. Kanji only shows Japanese kanji. Only affects Words.'],
+    ['form.pace', 'New word every', opt([1, '1 beat'], [2, '2 beats'], [4, '4 beats'], [8, '8 beats']), 'How often the big word changes. Only affects Words.'],
     ['wiring.fly', 'Fly boost', 'wire', 'Speeds up the tunnel fly-through with the music.'],
   ], 'The base shape everything else reacts around.'],
   ['Render', [
@@ -530,7 +543,8 @@ function sanitize(raw) {
 // a layer (0..1) and weights. That shared shape is what lets any form combine with any ripple/render.
 function buildForm(f, ex, ey) {
   const paths = [], s = f.size, det = f.detail;
-  const path = (closed, kind, layer, sf, vk) => { const p = { closed, kind, layer, sf, vk, bx: [], by: [], nx: [], ny: [], u: [], w: [], rw: [] }; paths.push(p); return p; };
+  if (f.type === 'words') return paths; // text: drawWords() draws it
+  const path =(closed, kind, layer, sf, vk) => { const p = { closed, kind, layer, sf, vk, bx: [], by: [], nx: [], ny: [], u: [], w: [], rw: [] }; paths.push(p); return p; };
   const add = (p, x, y, nx, ny, u, w, rw = 1) => { p.bx.push(x); p.by.push(y); p.nx.push(nx); p.ny.push(ny); p.u.push(u); p.w.push(w); p.rw.push(rw); };
   const radial = (p, x, y, u) => { const d = Math.hypot(x, y) || 1e-6; add(p, x, y, x / d, y / d, u, d); };
   const layerOf = (l, L) => L > 1 ? 1 - l / (L - 1) : 0; // l = 0 is the outermost, drawn first
@@ -775,6 +789,243 @@ function drawBackground(c, deck, w, h, alpha, dt) {
     }
   }
   c.globalAlpha = 1;
+}
+
+/* ================= words: one feeling in many languages, set in type that moves with the music ================= */
+const LANGS = { en: 'English', pt: 'Português', de: 'Deutsch', ja: '日本語', zh: '中文', es: 'Español', hi: 'हिन्दी', fr: 'Français', ar: 'العربية' };
+const LANG_KEYS = Object.keys(LANGS);
+// one feeling per line, in LANGS order; the English word doubles as the caption
+const WORDS = `music|música|Musik|音楽|音乐|música|संगीत|musique|موسيقى
+together|juntos|zusammen|共に|一起|juntos|साथ|ensemble|معًا
+rhythm|ritmo|Rhythmus|律動|节奏|ritmo|लय|rythme|إيقاع
+heartbeat|batida|Herzschlag|鼓動|心跳|latido|धड़कन|battement|نبض
+resonance|ressonância|Resonanz|共鳴|共鸣|resonancia|अनुनाद|résonance|رنين
+echo|eco|Widerhall|残響|回响|eco|गूँज|écho|صدى
+soul|alma|Seele|魂|灵魂|alma|आत्मा|âme|روح
+harmony|harmonia|Harmonie|調和|和谐|armonía|सामंजस्य|harmonie|تناغم
+dance|dança|Tanz|舞|舞蹈|baile|नृत्य|danse|رقص
+light|luz|Licht|光|光|luz|रोशनी|lumière|نور
+joy|alegria|Freude|歓喜|欢乐|alegría|आनंद|joie|فرح
+wave|onda|Welle|波|波浪|onda|तरंग|onde|موجة
+song|canção|Lied|歌|歌|canción|गीत|chanson|أغنية
+sound|som|Klang|音|声音|sonido|ध्वनि|son|صوت
+love|amor|Liebe|愛|爱|amor|प्रेम|amour|حب
+dream|sonho|Traum|夢|梦|sueño|सपना|rêve|حلم
+energy|energia|Energie|気|能量|energía|ऊर्जा|énergie|طاقة
+freedom|liberdade|Freiheit|自由|自由|libertad|आज़ादी|liberté|حرية
+heart|coração|Herz|心|心|corazón|दिल|cœur|قلب
+unity|união|Einheit|一体感|合一|unión|एकता|unité|وحدة
+night|noite|Nacht|夜|夜|noche|रात|nuit|ليل
+fire|fogo|Feuer|炎|火焰|fuego|आग|feu|نار
+we|nós|wir|我ら|我们|nosotros|हम|nous|نحن
+vibration|vibração|Schwingung|振動|振动|vibración|कंपन|vibration|اهتزاز
+celebration|festa|Fest|祝祭|庆典|fiesta|उत्सव|fête|احتفال
+infinity|infinito|Unendlichkeit|無限|无限|infinito|अनंत|infini|اللانهاية
+silence|silêncio|Stille|静寂|寂静|silencio|मौन|silence|صمت
+life|vida|Leben|生命|生命|vida|जीवन|vie|حياة
+stars|estrelas|Sterne|星|星辰|estrellas|सितारे|étoiles|نجوم
+bond|laço|Verbundenheit|絆|纽带|lazo|रिश्ता|lien|رابط`.split('\n').map(r => r.split('|'));
+const HAN = /^\p{Script=Han}+$/u, CJK = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]+$/u;
+// letter spacing would tear joined scripts (Arabic, Devanagari) apart, so only these get it
+const TRACKABLE = /^[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Common}\p{Script=Inherited}]*$/u;
+// Kanji only: the all-kanji Japanese words above, plus these, each with its meaning
+const KANJI = [...WORDS.filter(r => HAN.test(r[3])).map(r => [r[3], r[0]]),
+  ...('響:resonance,和:harmony,共:together,祭:festival,宴:feast,熱:fever,震:tremor,鳴:ring out,雷:thunder,輪:circle,縁:fate,奏:to play,鼓:drum,風:wind,空:sky,月:moon,'
+    + '宇宙:cosmos,花火:fireworks,永遠:forever,刹那:an instant,無我:losing yourself,夢中:lost in it,一期一会:once in a lifetime,以心伝心:heart to heart').split(',').map(s => s.split(':'))];
+// typefaces per script ({} = size in px); up = uppercase, track = letter spacing in em, k = size factor
+const SANS = '"Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif';
+const TYPE = {
+  latin: [{ f: 'italic 400 {}px "Didot","Bodoni 72","Bodoni MT",Georgia,serif' },
+    { f: '800 {}px "Avenir Next Condensed","Futura","Helvetica Neue",Arial,sans-serif', up: 1, track: 0.02 },
+    { f: '200 {}px ' + SANS, up: 1, track: 0.3, k: 0.7 }],
+  ja: [{ f: '600 {}px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif', track: 0.05 },
+    { f: '800 {}px "Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif', track: 0.05 },
+    { f: '300 {}px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif', track: 0.25, k: 0.85 }],
+  zh: [{ f: '700 {}px "Songti SC","STSong","Noto Serif SC",serif', track: 0.05 },
+    { f: '600 {}px "PingFang SC","Noto Sans SC",sans-serif', track: 0.05 },
+    { f: '200 {}px "PingFang SC","Noto Sans SC",sans-serif', track: 0.25, k: 0.85 }],
+  hi: [{ f: '600 {}px "Kohinoor Devanagari","Devanagari Sangam MN","Noto Sans Devanagari",sans-serif' },
+    { f: '300 {}px "Kohinoor Devanagari","Devanagari Sangam MN","Noto Sans Devanagari",sans-serif' }],
+  ar: [{ f: '400 {}px "Diwan Thuluth","Mishafi","Al Bayan","Geeza Pro","Noto Naskh Arabic",serif' },
+    { f: '700 {}px "Geeza Pro","Noto Naskh Arabic",sans-serif' }],
+};
+const TRACK = 'letterSpacing' in CanvasRenderingContext2D.prototype;
+let wordsRev = 0; // bumped when the languages or your words change, so the words looks pick fresh ones
+const cleanWords = a => [...new Set(a.filter(s => typeof s === 'string').map(s => s.trim().slice(0, 40)).filter(Boolean))].slice(0, 500);
+const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+const langOf = s => /\p{Script=Arabic}/u.test(s) ? 'ar' : /\p{Script=Devanagari}/u.test(s) ? 'hi' : /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(s) ? 'ja' : 'en';
+const onLangs = () => LANG_KEYS.filter(k => G.langs[k]);
+const fromRow = (r, k) => ({ text: r[LANG_KEYS.indexOf(k)], lang: k, cap: k === 'en' ? LANGS.en : `${LANGS[k]} · ${r[0]}` });
+const fromKanji = ([text, cap]) => ({ text, lang: 'ja', cap });
+const ownWords = kanji => G.langs.mine ? lib.words.filter(s => !kanji || HAN.test(s)).map(text => ({ text, cap: '' })) : [];
+
+// the big word walks one feeling through a few languages, then moves on; your own words take every other turn
+function nextHero(st, kanji) {
+  if (!st.queue.length) {
+    const own = ownWords(kanji), langs = onLangs();
+    st.mineTurn = !st.mineTurn;
+    if (own.length && (st.mineTurn || (!kanji && !langs.length))) st.queue = [pick(own)];
+    else if (kanji) st.queue = [fromKanji(pick(KANJI))];
+    else { const r = pick(WORDS); st.queue = shuffle(langs.length ? langs : LANG_KEYS).slice(0, 4).map(k => fromRow(r, k)); }
+  }
+  return st.queue.shift();
+}
+function anyWord(kanji) { // for the small floating words
+  const own = ownWords(kanji), langs = onLangs();
+  if (own.length && (Math.random() < 0.3 || (!kanji && !langs.length))) return pick(own);
+  return kanji ? fromKanji(pick(KANJI)) : fromRow(pick(WORDS), pick(langs.length ? langs : LANG_KEYS));
+}
+function mkWord(e, t, vert) { // vert = chance of setting CJK top to bottom
+  const lang = e.lang || langOf(e.text), ty = pick(TYPE[lang in TYPE ? lang : 'latin']);
+  return { ...e, lang, ty, born: t, text: ty.up ? e.text.toUpperCase() : e.text, vert: Math.random() < vert && CJK.test(e.text), trackable: TRACKABLE.test(e.text) };
+}
+function setType(c, w, px, track = w.ty.track || 0) {
+  c.font = w.ty.f.replace('{}', px.toFixed(1));
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  const sp = TRACK && w.trackable ? track * px : 0;
+  if (TRACK) c.letterSpacing = sp + 'px';
+  return sp;
+}
+// draws the word centred on 0,0; vertical words stack their characters
+function paintWord(c, w, px, stroke, track) {
+  const sp = setType(c, w, px, track), put = (s, x, y) => stroke ? c.strokeText(s, x, y) : c.fillText(s, x, y);
+  if (!w.vert) return put(w.text, sp / 2, 0); // letter spacing also trails the last letter: shift back to centre
+  const ch = [...w.text];
+  ch.forEach((s, i) => put(s, 0, (i - (ch.length - 1) / 2) * px * 1.05));
+}
+// font size that fits the box; also keeps the word's size (W x H) for placing it
+function sizeWord(c, w, base, maxW, maxH) {
+  base *= w.ty.k || 1;
+  setType(c, w, base);
+  const W = w.vert ? base : c.measureText(w.text).width, H = w.vert ? [...w.text].length * base * 1.05 : base * 1.2, k = Math.min(1, maxW / W, maxH / H);
+  Object.assign(w, { px: base * k, W: W * k, H: H * k });
+}
+// dot-matrix version of a word: its inked cells, rasterised once, in em units
+const DOT = 1 / 22, glyph = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+function glyphDots(w) {
+  if (w.dots) return w.dots;
+  const H = 96, cv = glyph.canvas, step = H * DOT;
+  cv.width = Math.ceil(w.W / w.px * H + H * 0.4); cv.height = Math.ceil(w.H / w.px * H + H * 0.4);
+  glyph.fillStyle = glyph.strokeStyle = '#fff'; glyph.lineWidth = step; glyph.translate(cv.width / 2, cv.height / 2);
+  paintWord(glyph, w, H, false); paintWord(glyph, w, H, true); // the outline thickens hairline faces so every stroke gets dots
+  const a = glyph.getImageData(0, 0, cv.width, cv.height).data, out = [];
+  for (let y = step / 2; y < cv.height; y += step) for (let x = step / 2; x < cv.width; x += step)
+    if (a[(Math.floor(y) * cv.width + Math.floor(x)) * 4 + 3] > 127) out.push((x - cv.width / 2) / H, (y - cv.height / 2) / H);
+  return w.dots = out;
+}
+
+// One big word changing on the beat, with a caption, echoes that ring out after each hit and colour-split ghosts on the highs;
+// smaller words drift around it, fading in on beats. Drawn in pixels around the screen centre.
+function drawWords(c, d, t) {
+  const L = d.L, st = d.st, f = L.form, U = d.U, pal = PALETTES[L.palette], R = L.render, kanji = f.script === 'kanji';
+  const hs = wire(L, 'hue') * 50, push = wire(L, 'push'), ro = Math.min(1, wire(L, 'rough')), rw = L.wiring.ripple, sp = L.ripple.speed;
+  const evs = rw.src === 'none' ? [] : F.events[rw.src], amp = Math.min(1, rw.amt * L.ripple.size * G.intensity);
+  const ex = d.ex * U, ey = d.ey * U, hx = st.cx * U, hy = st.cy * U, quiet = t - F.lastBeat > 4;
+  const hsl = (h, l, s = pal.s) => `hsl(${h + hs},${s}%,${Math.min(95, l)}%)`;
+  st.sats ||= []; st.out ||= []; st.queue ||= [];
+  c.save();
+  c.scale(1 / U, 1 / U); // pixels from here, still under the camera's zoom, drift and shake
+  c.globalCompositeOperation = R.blend === 'add' ? 'lighter' : 'source-over';
+  c.lineJoin = 'round';
+
+  // the big word changes every few beats (on a timer when there are none); new languages or words swap it at once
+  const pool = wordsRev + f.script;
+  if (!st.hero || st.pool !== pool || (quiet ? t - st.hero.born > Math.max(1.5, f.pace * 0.5) : F.beatCount - st.wordBeat >= f.pace)) {
+    if (st.pool !== pool) st.queue = [];
+    st.pool = pool;
+    if (st.hero) { st.hero.died = t; st.out.push(st.hero); }
+    const e = nextHero(st, kanji), w = st.hero = mkWord(e, t, kanji && [...e.text].length > 2 ? 1 : 0);
+    sizeWord(c, w, U * (kanji ? 0.85 : 0.5) * f.size, ex * 1.7, ey * 1.6);
+    st.wordBeat = F.beatCount;
+  }
+
+  // small words: one fades in per beat, in the bands above and below the big word (vertical ones down the sides)
+  const ev = F.events.beat.at(-1);
+  if ((ev && ev.t > (st.lastSat || 0)) || (quiet && t - (st.lastSat || 0) > 1.2)) {
+    st.lastSat = t;
+    const w = mkWord(anyWord(kanji), t, kanji ? 1 : 0.4), same = o => o.text.toLowerCase() === w.text.toLowerCase();
+    if (st.sats.length < Math.round(f.detail * 14) && !same(st.hero) && !st.sats.some(same)) { // each word on screen once
+      sizeWord(c, w, U * rand(0.06, 0.13) * f.size, ex * 0.9, ey * 0.8);
+      for (let i = 0; i < 8; i++) { // a few tries at a spot clear of the other small words; none free = skip this beat
+        const side = Math.random() < 0.5 ? -1 : 1;
+        if (w.vert) Object.assign(w, { x: side * rand(ex * 0.55, ex * 0.85 - w.W), y: rand(-0.25, 0.25) * (ey * 2 - w.H) });
+        else Object.assign(w, { x: rand(-1, 1) * (ex * 0.8 - w.W / 2), y: side * rand(0.45, 0.75) * ey }); // margin: drifting closer spreads them out
+        if (st.sats.some(o => Math.abs(o.x - w.x) * 2 < o.W + w.W + U * 0.1 && Math.abs(o.y - w.y) * 2 < o.H + w.H)) continue;
+        Object.assign(w, { life: clamp(rand(4, 8) * F.beatGap, 2, 6), tilt: rand(-1, 1), hue: Math.random(), outline: R.type === 'lines' || (R.type === 'filled' && Math.random() < 0.4) });
+        st.sats.push(w);
+        break;
+      }
+    }
+  }
+  st.sats = st.sats.filter(w => t - w.born < w.life);
+  for (const w of st.sats) {
+    const a = t - w.born, z = 1 + a * st.fly * 0.15; // drifts towards you
+    c.save();
+    c.translate(w.x * z + hx * 0.5, w.y * z + hy * 0.5); // half the camera's wander: depth
+    c.rotate(w.tilt * 0.06 * Math.sin(st.spin));
+    c.scale(z, z);
+    c.globalAlpha = clamp(Math.min(a / 0.4, (w.life - a) / 1.2)) * (0.45 + 0.4 * F.mids); // breathes with the mids
+    const col = hsl(lerp(pal.h[0], pal.h[1], w.hue), pal.l + 10);
+    if (w.outline) { c.strokeStyle = col; c.lineWidth = Math.max(1, R.width * 0.6); paintWord(c, w, w.px, true); }
+    else { c.fillStyle = col; paintWord(c, w, w.px); }
+    c.restore();
+  }
+
+  const hero = (w, al, k, tr, live) => {
+    const px = w.px, gx = w.vert ? 0 : w.W / 2, gy = w.vert ? w.H / 2 : 0;
+    const ink = c.createLinearGradient(-gx, -gy, gx, gy); // palette sweep across the word
+    ink.addColorStop(0, hsl(pal.h[0], pal.l + 8)); ink.addColorStop(1, hsl(pal.h[1], pal.l + 8));
+    c.save();
+    c.translate(hx, hy); c.scale(k, k);
+    const ring = (s, a) => { c.save(); c.scale(s, s); c.globalAlpha = a; c.lineWidth = Math.max(1, px / 150) / s; paintWord(c, w, px, true, tr); c.restore(); };
+    if (live && R.type !== 'dots') { // reverb: outlines that spread with the bass, and echoes that ring out after each hit
+      c.strokeStyle = ink;
+      for (let j = 1; j <= 2; j++) ring(1 + j * (0.03 + push * 0.05), al * 0.22 / j);
+      c.strokeStyle = hsl(pal.h[1], pal.l + 20);
+      for (const e of evs) { const g = t - e.t; ring(1 + g * sp * 0.5, al * amp * Math.exp(-g * 2.2) * 0.8); }
+    }
+    if (live && ro > 0.05) { // colour-split ghosts that jitter with the highs
+      const j = ro * px * 0.06, mode = c.globalCompositeOperation;
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = al * ro * 0.5;
+      for (const [h, s] of [[pal.h[0], 1], [pal.h[1], -1]]) {
+        c.save(); c.translate(s * rand(0, j), rand(-j, j) * 0.3); c.fillStyle = hsl(h, 50); paintWord(c, w, px, false, tr); c.restore();
+      }
+      c.globalCompositeOperation = mode;
+    }
+    c.globalAlpha = al;
+    if (R.type === 'dots') { // LED dot matrix: dots swell with the bass and a shockwave runs through them on each hit
+      const p = glyphDots(w), r0 = px * DOT * 0.3;
+      c.fillStyle = ink; c.beginPath();
+      for (let i = 0; i < p.length; i += 2) {
+        let x = p[i], y = p[i + 1], q = push * 0.4;
+        if (live) for (const e of evs) { const g = t - e.t, fr = (Math.hypot(x, y) - g * sp * 1.6) / 0.2; q += Math.exp(-g * 1.5 - fr * fr) * amp * 1.5; }
+        const r = r0 * (1 + q), m = px * (1 + q * 0.12);
+        c.moveTo(x * m + r, y * m); c.arc(x * m, y * m, r, 0, TAU);
+      }
+      c.fill();
+    } else if (R.type === 'lines') { c.strokeStyle = ink; c.lineWidth = R.width * Math.max(1, px / 120); paintWord(c, w, px, true, tr); }
+    else { c.fillStyle = ink; paintWord(c, w, px, false, tr); }
+    if (live && w.cap) { // small caption: the language and meaning (or a kanji's meaning), set wide
+      const cs = Math.max(10, U * 0.032), cap = w.cap.toUpperCase();
+      c.font = `500 ${cs.toFixed(1)}px ${SANS}`;
+      if (TRACK) c.letterSpacing = (TRACKABLE.test(cap) ? cs * 0.35 : 0) + 'px';
+      c.globalAlpha = al * 0.75; c.fillStyle = hsl(pal.h[1], 82, pal.s * 0.5);
+      if (w.vert) { c.translate(w.W * 0.75 + cs, -w.H / 2); c.rotate(Math.PI / 2); c.textAlign = 'left'; c.fillText(cap, 0, 0); } // runs down beside the column
+      else c.fillText(cap, cs * 0.17, w.H / 2 + cs * 1.4);
+    }
+    c.restore();
+  };
+  st.out = st.out.filter(w => t - w.died < 0.35);
+  for (const w of st.out) { const o = (t - w.died) / 0.35; hero(w, (1 - o) ** 3 * 0.8, 1 + o * 0.3, (w.ty.track || 0) + o * 0.4); } // leaving: swells, spreads out, fades
+  const w = st.hero, e = 1 - (1 - clamp((t - w.born) / 0.3)) ** 3; // arriving: lands from slightly bigger, letters closing in
+  hero(w, e, lerp(1.15, 1, e) * (1 + push * 0.1), (w.ty.track || 0) + (1 - e) * 0.5, true);
+  c.restore();
+
+  // sparks fly off the big word: hand drawSparks() points across it, in unit space
+  const n = 24, a = st.anchor ||= { ox: new Float32Array(n), oy: new Float32Array(n) };
+  for (let i = 0; i < n; i++) { a.ox[i] = (hx + rand(-0.5, 0.5) * w.W) / U; a.oy[i] = (hy + rand(-0.35, 0.35) * w.H) / U; }
+  a.cx = hx / U; a.cy = hy / U;
+  d.paths = [a];
 }
 
 /* ================= background moments: textures over everything behind the shapes ================= */
@@ -1152,7 +1403,8 @@ function renderDeck(d, t, dt, w, h, dpr) {
   st.kx = ease(st.kx, st.kxT, 0.35); st.ky = ease(st.ky, st.kyT, 0.35); // two lags in a row: no sudden starts
   st.cx = ease(st.cx, tx + st.kx, lag); st.cy = ease(st.cy, ty + st.ky, lag);
   st.zoom = ease(st.zoom, wire(L, 'zoom'), wire(L, 'zoom') > st.zoom ? 0.12 : 0.6);
-  deform(d, t);
+  const words = L.form.type === 'words';
+  if (!words) deform(d, t);
 
   // 1. background, with trails or feedback echo of the previous frame
   const fbAmt = L.feedback.amount;
@@ -1188,8 +1440,9 @@ function renderDeck(d, t, dt, w, h, dpr) {
   S.translate(w / 2 + rand(-sh, sh), h / 2 + rand(-sh, sh));
   S.rotate(st.drift);
   S.scale(d.U * zoom, d.U * zoom);
-  drawForm(S, d);
-  if (L.ripple.type === 'bloom' && L.wiring.ripple.src !== 'none') {
+  if (words) drawWords(S, d, t);
+  else drawForm(S, d);
+  if (!words && L.ripple.type === 'bloom' && L.wiring.ripple.src !== 'none') {
     for (const e of F.events[L.wiring.ripple.src]) {
       const g = t - e.t, k = 1 + g * L.ripple.speed * 0.9;
       S.save(); S.scale(k, k);
@@ -1245,12 +1498,12 @@ const sanitizeSet = s => ({
   items: (Array.isArray(s.items) ? s.items : []).filter(i => typeof i === 'string'),
   rot: sanitizeRot(s.rot), updated: +s.updated || 0,
 });
-const lib = { looks: [], sets: [], activeSet: '' }; // what gets saved
+const lib = { looks: [], sets: [], activeSet: '', words: [] }; // what gets saved
 const drafts = new Map(); // look id -> working copy with unsaved edits
 const savedLook = id => lib.looks.find(l => l.id === id) || BUILTINS.find(l => l.id === id);
 const working = id => drafts.get(id) || (savedLook(id) ? clone(savedLook(id)) : null);
 const activeSet = () => lib.sets.find(s => s.id === lib.activeSet) || lib.sets[0];
-const libData = () => ({ app: 'music-visualizer', version: 2, looks: lib.looks, sets: lib.sets, activeSet: lib.activeSet });
+const libData = () => ({ app: 'music-visualizer', version: 2, looks: lib.looks, sets: lib.sets, activeSet: lib.activeSet, words: lib.words });
 const touch = s => { s.updated = Date.now(); persist(); };
 
 // merges a library (linked file, import, browser storage) into `into`: newer wins per id, nothing gets deleted
@@ -1267,6 +1520,7 @@ function mergeLibrary(into, data) {
     const s = sanitizeSet(raw), i = into.sets.findIndex(x => x.id === s.id);
     if (i < 0) into.sets.push(s); else if (s.updated > into.sets[i].updated) into.sets[i] = s;
   }
+  into.words = cleanWords([...into.words || [], ...Array.isArray(data.words) ? data.words : []]); // your words: union
   if (!into.sets.some(s => s.id === into.activeSet)) into.activeSet = into.sets.some(s => s.id === data.activeSet) ? data.activeSet : into.sets[0]?.id || '';
   return n;
 }
@@ -1332,7 +1586,7 @@ async function connectLibrary(h, ask) {
   const text = await (await h.getFile()).text();
   if (text.trim()) mergeLibrary(lib, JSON.parse(text)); // a file that isn't a library throws here, and is never written to
   LIBF.handle = h; LIBF.pending = null; LIBF.error = '';
-  refreshLooks(); refreshSet();
+  refreshLooks(); refreshSet(); refreshWords();
   persist();
 }
 async function linkLibrary(create) {
@@ -1561,7 +1815,7 @@ function cycleTheme() {
 function randomLook() {
   const fresh = sanitize(merge(clone(BASE), {
     id: 'random', name: '🎲 Random',
-    form: { type: pick(['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches']), size: rand(0.7, 1.2), detail: Math.random(), sides: pick([3, 4, 5, 6, 8]), fly: rand(0, 3) },
+    form: { type: pick(['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches', 'words']), size: rand(0.7, 1.2), detail: Math.random(), sides: pick([3, 4, 5, 6, 8]), fly: rand(0, 3), script: pick(['all', 'all', 'kanji']) },
     render: { type: pick(['lines', 'filled', 'dots']), blend: pick(['normal', 'add']), width: rand(1, 3), trails: pick([0, 0, 0.5, 0.8]) },
     ripple: { type: pick(['rim', 'shock', 'stone', 'roll', 'bloom']), speed: rand(0.6, 1.6), size: rand(0.8, 1.6) },
     palette: pick(Object.keys(PALETTES)),
@@ -1575,6 +1829,8 @@ function randomLook() {
   drafts.set('random', fresh); // unsaved until you Save or Snapshot it
   showLook(fresh, transDur());
 }
+
+const refreshWords = () => { $('#myWords').value = lib.words.join('\n'); wordsRev++; };
 
 const bound = [];
 function refreshSettings() {
@@ -1684,7 +1940,7 @@ function wireUI() {
   $('#importFile').onchange = async e => {
     try {
       const n = mergeLibrary(lib, JSON.parse(await e.target.files[0].text()));
-      persist(); refreshLooks(); refreshSet();
+      persist(); refreshLooks(); refreshSet(); refreshWords();
       msg(`Imported ${n} look${n === 1 ? '' : 's'}.`);
     } catch { msg('That file is not a visualizer library.'); }
     e.target.value = '';
@@ -1703,6 +1959,17 @@ function wireUI() {
   $('#videoFiles').onchange = e => { setClips([...e.target.files]); e.target.value = ''; };
   $('#clipTab').onclick = captureTab;
   $('#clipStop').onclick = stopMedia;
+
+  // Words: language toggles are kept per browser; your words are saved with the library
+  for (const k of [...LANG_KEYS, 'mine']) {
+    const b = Object.assign(document.createElement('button'), { textContent: LANGS[k] || 'My words' });
+    b.dataset.tip = k === 'mine' ? 'Mix in your own words from the list below.' : `Show words in ${LANGS[k]}.`;
+    b.classList.toggle('on', !!G.langs[k]);
+    b.onclick = () => { G.langs[k] = !G.langs[k]; b.classList.toggle('on', G.langs[k]); wordsRev++; savePrefs(); };
+    $('#langs').append(b);
+  }
+  refreshWords();
+  $('#myWords').oninput = e => { lib.words = cleanWords(e.target.value.split('\n')); wordsRev++; persist(); };
 
   $('#toggle').onclick = () => document.body.classList.toggle('closed');
   addEventListener('keydown', e => {
@@ -1798,8 +2065,12 @@ function selfTest() {
   const mig = migrateV1({ rev: 4, looks: [{ ...clone(BUILTINS[0]), rotate: true }, edited, { ...clone(BASE), id: 'u1', name: 'Mine', rotate: false }] });
   if (mig.looks.length !== 2 || mig.sets[0].items.length !== 2 || mig.sets[0].items[0] !== BUILTINS[0].id || !mig.looks.some(l => l.name.endsWith('(my edit)'))) fails.push('v1 migration wrong');
   const into = { looks: [{ ...clone(BASE), id: 'a', name: 'old', updated: 1 }], sets: [], activeSet: '' };
-  mergeLibrary(into, { looks: [{ ...clone(BASE), id: 'a', name: 'new', updated: 2 }, { ...clone(BASE), id: 'b', name: 'B', updated: 1 }, { ...clone(BASE), id: 'blob' }], sets: [{ id: 's', name: 'S', items: ['a', 5] }] });
+  mergeLibrary(into, { looks: [{ ...clone(BASE), id: 'a', name: 'new', updated: 2 }, { ...clone(BASE), id: 'b', name: 'B', updated: 1 }, { ...clone(BASE), id: 'blob' }], sets: [{ id: 's', name: 'S', items: ['a', 5] }], words: [' 夢 ', 5, '', 'joy'] });
+  mergeLibrary(into, { looks: [], words: ['joy', 'luz'] });
   if (into.looks.length !== 2 || into.looks[0].name !== 'new' || into.sets[0].items.length !== 1 || into.activeSet !== 's') fails.push('library merge wrong');
+  if (into.words.join() !== '夢,joy,luz') fails.push('word list merge wrong: ' + into.words);
+  if (WORDS.some(r => r.length !== LANG_KEYS.length || r.some(x => !x.trim())) || KANJI.some(([k, g]) => !HAN.test(k) || !g)) fails.push('word tables incomplete');
+  if (langOf('موسيقى') !== 'ar' || langOf('संगीत') !== 'hi' || langOf('ことば') !== 'ja' || langOf('saudade') !== 'en' || TRACKABLE.test('معًا') || !TRACKABLE.test('Ação 音楽')) fails.push('script detection wrong');
   console[fails.length ? 'error' : 'log'](fails.length ? 'SELF-TEST FAILED\n' + fails.join('\n') : 'self-test passed');
   msg(fails.length ? 'Self-test failed — see console.' : 'Self-test passed.');
   return fails;

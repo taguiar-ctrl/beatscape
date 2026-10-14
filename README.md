@@ -20,6 +20,7 @@ A beat-reactive music visualizer in a single HTML file: no build step, no librar
 - **Sets** are playlists of looks that rotate on the beat or on drops, with stylish transitions (zoom punch, iris, glitch, burn, swirl). Each set has its own theme and settings.
 - **Themes** restyle every look in a set: Neon trails, Noir grain, Ultra trippy, Warm, Cold, Vaporwave and more.
 - **Background moments** briefly texture the video or background at high points in the music: VHS, halftone, pixelate, thermal, light leak, mirror.
+- **Words:** a look of poetic words about music and togetherness in nine languages (English, Portuguese, German, Japanese, Mandarin, Spanish, Hindi, French, Arabic), set in each script's own typefaces and changing on the beat. Toggle languages and add your own words under **Controls → Words**. The **Kanji** look shows kanji only.
 - **Video clips:** pick a folder of your own clips to cut on the beat, or capture a browser tab's video.
 - **Library:** looks and sets save in the browser. In Chrome they can also be linked to a `looks.json` file.
 
