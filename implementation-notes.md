@@ -28,13 +28,15 @@ Deliverable: `visualizer.html`, a single file with no dependencies that works of
 | D16 | Transitions | Transitions run in the GPU pass, which reads both looks: Zoom punch, Iris, Glitch, Burn, Swirl, Crossfade, Cut, plus Random mix (a different style per switch). Transition style and length are separate settings. Glow and shockwaves still apply during transitions. Without WebGL2, every transition falls back to a crossfade. | User: transitions should be "cooler and stylish" |
 | D17 | Ridgelines centring | The line block is symmetric about the screen centre (±50% of half-height) | User: the bottom line sat too close to the bottom edge |
 | D14 | Ridgelines width | Lines run edge to edge (slightly past the edges, so a wandering centre doesn't reveal the ends); peaks keep their old width | User request |
+| D23 | Settings panel UX | Bigger type, a value readout on every slider with the track filled up to the value, toggle switches, chevron sections. A wired effect set to "None" dims its slider. Every setting, button and section has a tooltip (`data-tip`; editor tips are the 4th field of each `SCHEMA` entry). Tooltips appear to the left of the panel, or below the control on narrow screens, and hide while you drag. The editor sits under an "Edit this look" heading, with only Form and Render open by default. | User: settings were hard to read and hard to understand at a glance |
+| D24 | Mandala | New form "Arch vortex", after a hand-drawn reference the user liked: rings of rainbow arches (5 nested half-circle bands each) shrinking towards a 3-arm spiral, seigaiha-style. Each ring sits in the valleys of the one outside it and turns faster the deeper it is, so the vortex winds up with the mids. Lines thin out towards the centre. "Arches per ring" uses the Sides setting; Detail sets the number of rings. The Mandala built-in now uses it. Petals stays for Supernova. | User: "I would like the mandala also to get even better design" |
 | D11 | Video | Media slot: local clip folder or file picker, plus capturing a tab's video as a live source. Clips cut every N beats, stutter on a trigger, and change speed with energy. Video can be the background, appear inside the shape, or blend over it, and it still goes through symmetry and feedback. Built last. | YouTube and Instagram embeds can't be drawn into a canvas, YouTube embeds fail from `file://`, and its policies forbid overlays |
 
 ## Look model (plain JSON, everything editable)
 
 ```
 { name,
-  form:       { type: blob|rings|ridges|cloud|grid|petals, size, detail, sides },
+  form:       { type: blob|rings|ridges|cloud|grid|petals|arches, size, detail, sides },
   render:     { type: lines|filled|dots, width, trails },
   ripple:     { type: rim|shockwave|stone|roll|bloom, speed, size },
   palette:    name,
@@ -77,6 +79,9 @@ The six prototypes become built-in looks. Users can save their own looks; built-
 8. **Saved data from earlier versions is migrated automatically.** Your own looks are kept, and the ticks become a set called "My set". A built-in you had edited becomes your own look named "… (my edit)". Deletions don't carry across merges, so a look deleted here can come back if you import an older file that still contains it.
 9. **Drafts last for the session only.** They aren't stored; the browser warns before you leave with unsaved edits.
 10. **Palette hue ranges now wrap forward.** sunset and blood had been interpolating through cyan and green. This also removes the lime tint from Mandala and Swarm.
+11. **Ridges and arches now erase what's behind them instead of painting the palette background over it**, so a video or textured background shows through the gaps. Side effects: with Use video set to "Inside shape", the video now appears only on the lines, not in the filled ridges. With Additive glow, nothing is hidden, as before.
+12. **Burn transition fixed.** Its blend ran backwards: it started on the new look, burned towards the old one, then snapped to the new one when it ended.
+13. **A zero-size window no longer freezes the visuals.** If the page loaded hidden (0×0), `drawForm` threw on a non-finite gradient, and the animation loop stopped for good. Frames are now skipped until the window has a size.
 
 ## Verification (2026-10-09, in the built-in browser using the demo signal)
 - **Self-test passes** (`selfTest()` in the console, or open with `#test`). It checks:

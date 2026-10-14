@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Music Visualizer</title>
 <style>
-  :root { --bg: #07070c; --panel: rgba(13, 13, 21, .92); --fg: #e8e8f0; --dim: #8d8da4; --line: #26263a; --accent: #7aa2ff; --warn: #ffb86b; }
+  :root { --bg: #07070c; --panel: rgba(11, 11, 18, .9); --fg: #ececf3; --label: #c2c2d2; --dim: #8a8aa3; --line: rgba(255, 255, 255, .07); --edge: rgba(255, 255, 255, .11);
+    --field: rgba(255, 255, 255, .05); --field-hi: rgba(255, 255, 255, .1); --track: rgba(255, 255, 255, .13); --accent: #7aa2ff; --accent-bg: rgba(122, 162, 255, .16); --warn: #ffb86b; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); font: 12px/1.4 system-ui, -apple-system, sans-serif; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); font: 13px/1.45 system-ui, -apple-system, sans-serif; }
   #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
   .ui { transition: opacity .4s; }
   body.idle { cursor: none; }
@@ -21,36 +22,68 @@
   .m i { display: block; height: 100%; width: 0; background: var(--accent); }
   #beat { width: 10px; height: 10px; border-radius: 50%; background: #333; }
   #msg { color: var(--warn); max-width: 380px; }
-  #toggle { position: fixed; right: 16px; top: 14px; z-index: 2; }
-  #panel { position: fixed; top: 0; right: 0; bottom: 0; width: 330px; max-width: 100%; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 54px 14px 28px; backdrop-filter: blur(8px); }
-  details { border-top: 1px solid var(--line); padding: 8px 0; }
-  summary { cursor: pointer; font-weight: 600; font-size: 13px; padding: 2px 0; }
-  .row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; align-items: center; margin: 6px 0; color: var(--dim); }
-  .row.wire { grid-template-columns: 100px 72px 1fr; }
-  select, input[type=range] { width: 100%; min-width: 0; }
-  input[type=range] { accent-color: var(--accent); }
-  input[type=checkbox] { justify-self: start; accent-color: var(--accent); }
-  select, button { background: #15151f; color: var(--fg); border: 1px solid #2c2c3c; border-radius: 6px; padding: 4px 6px; font: inherit; }
-  button { cursor: pointer; padding: 5px 9px; }
-  button:disabled { opacity: .4; cursor: default; }
-  button.on { border-color: var(--accent); background: #1b2340; }
-  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
-  #looks { list-style: none; margin: 6px 0; padding: 0; max-height: 230px; overflow: auto; }
-  #looks li { display: flex; gap: 8px; align-items: center; padding: 3px 6px; border-radius: 5px; cursor: pointer; }
-  #looks li:hover { background: #15151f; }
-  #looks li.cur { background: #1b2340; }
-  #looks li small { color: var(--dim); margin-left: auto; }
-  .hint { color: var(--dim); margin: 4px 0; }
+  #toggle { position: fixed; right: 16px; top: 14px; z-index: 2; background-color: rgba(22, 22, 34, .95); }
+  #panel { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 100%; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 58px 18px 32px; backdrop-filter: blur(14px); scrollbar-width: thin; scrollbar-color: #34344a transparent; }
+  details { border-top: 1px solid var(--line); padding-bottom: 10px; }
+  details:not([open]) { padding-bottom: 0; }
+  summary { list-style: none; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 600; font-size: 14px; padding: 13px 0 7px; user-select: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: ''; width: 7px; height: 7px; margin-right: 4px; border: solid var(--dim); border-width: 0 1.5px 1.5px 0; transform: rotate(-45deg); transition: transform .2s; }
+  details[open] > summary::after { transform: rotate(45deg); }
+  summary:hover::after { border-color: var(--fg); }
+  details:not([open]) > summary { padding-bottom: 13px; }
+  /* a row is "label · control" on one line; sliders drop to their own full-width line under the label and value */
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 7px 10px; align-items: center; padding: 6px 0; color: var(--label); }
+  .row:hover > span { color: var(--fg); }
+  .row.wire { grid-template-columns: 1fr auto auto; }
+  .row > input[type=range] { grid-row: 2; grid-column: 1 / -1; }
+  .row.off > input[type=range], .row.off > output { opacity: .3; }
+  output { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+  select, button { background-color: var(--field); color: var(--fg); border: 1px solid var(--edge); border-radius: 7px; font: inherit; transition: background-color .15s, border-color .15s; }
+  select { appearance: none; -webkit-appearance: none; width: 150px; min-width: 0; padding: 5px 26px 5px 10px; text-overflow: ellipsis; cursor: pointer;
+    background: var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238a8aa3' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center; }
+  .row.wire select { width: 86px; }
+  select option { background: #15151f; }
+  select:hover, button:hover:not(:disabled) { background-color: var(--field-hi); border-color: rgba(255, 255, 255, .18); }
+  button { cursor: pointer; padding: 6px 11px; }
+  button:disabled { opacity: .35; cursor: default; }
+  button.on { border-color: var(--accent); background-color: var(--accent-bg); }
+  button.primary:not(:disabled) { background-color: var(--accent); border-color: var(--accent); color: #0a0d1a; font-weight: 600; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; min-width: 0; height: 16px; margin: 0; background: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(var(--accent), var(--accent)) 0 / var(--p, 50%) 100% no-repeat, var(--track); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .6); transition: transform .15s; }
+  input[type=range]:hover::-webkit-slider-thumb { transform: scale(1.2); }
+  input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--track); }
+  input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent); }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .6); }
+  input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
+  .row input[type=checkbox] { -webkit-appearance: none; appearance: none; position: relative; width: 34px; height: 20px; margin: 0; border-radius: 10px; background: var(--track); transition: background .2s; }
+  .row input[type=checkbox]::before { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .row input[type=checkbox]:checked { background: var(--accent); }
+  .row input[type=checkbox]:checked::before { transform: translateX(14px); }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  #looks, #setItems { list-style: none; margin: 8px 0; padding: 4px; max-height: 240px; overflow: auto; background: rgba(0, 0, 0, .22); border: 1px solid var(--line); border-radius: 10px; }
+  #looks li { display: flex; gap: 9px; align-items: center; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  #looks li:hover { background: var(--field-hi); }
+  #looks li.cur, #setItems li.cur { background: var(--accent-bg); color: #fff; }
+  #looks li small { color: var(--dim); margin-left: auto; font-size: 11px; }
+  .hint { color: var(--dim); font-size: 12px; margin: 6px 0; }
   #looks li.hdr, #looks li.empty, #setItems li.empty { cursor: default; color: var(--dim); }
-  #looks li.hdr { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; padding-top: 8px; }
+  #looks li.hdr { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; padding: 10px 8px 3px; }
   #looks li.hdr:hover, #looks li.empty:hover { background: none; }
-  #setItems { list-style: none; margin: 6px 0; padding: 0; max-height: 220px; overflow: auto; }
-  #setItems li { display: flex; gap: 6px; align-items: center; padding: 2px 4px; border-radius: 5px; }
-  #setItems li.cur { background: #1b2340; }
-  #setItems .n { color: var(--dim); width: 16px; text-align: right; }
+  #setItems li { display: flex; gap: 6px; align-items: center; padding: 3px 4px 3px 8px; border-radius: 6px; }
+  #setItems li.empty { padding: 6px 8px; }
+  #setItems .n { color: var(--dim); width: 16px; text-align: right; font-variant-numeric: tabular-nums; }
   #setItems .nm { flex: 1; cursor: pointer; }
-  #setItems button { padding: 1px 6px; }
-  h3 { font-size: 11px; margin: 12px 0 2px; color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  #setItems button { padding: 1px 7px; background: none; border-color: transparent; color: var(--dim); }
+  #setItems button:hover { color: var(--fg); }
+  h2 { margin: 22px 0 0; padding-top: 18px; border-top: 1px solid rgba(122, 162, 255, .3); color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+  h3 { font-size: 10.5px; margin: 18px 0 2px; color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: .1em; }
+  #tip { position: fixed; z-index: 10; max-width: 250px; padding: 8px 11px; border-radius: 8px; background: rgba(22, 22, 34, .97); border: 1px solid var(--edge); box-shadow: 0 10px 30px rgba(0, 0, 0, .55);
+    font-size: 12.5px; line-height: 1.45; pointer-events: none; opacity: 0; transform: translateX(4px); transition: opacity .15s, transform .15s; }
+  #tip.show { opacity: 1; transform: none; }
+  #tip small { display: block; margin-top: 5px; color: var(--dim); font-size: 11.5px; }
 </style>
 </head>
 <body>
@@ -63,66 +96,68 @@
   <span id="msg"></span>
 </div>
 
-<button id="toggle" class="ui" title="Show/hide controls (H hides everything)">☰ Controls</button>
+<button id="toggle" class="ui" data-tip="Show or hide this panel.&#10;Shortcut: H hides everything">☰ Controls</button>
 
 <aside id="panel" class="ui">
-  <details open><summary>Sound</summary>
+  <p class="hint">Hover any setting to see what it does.</p>
+  <details open><summary data-tip="Where the music comes from, and how strongly the visuals react to it.">Sound</summary>
     <div class="btns">
-      <button data-src="demo">Demo</button>
-      <button data-src="system" title="Share Entire screen + turn on Share system audio (Chrome)">System audio</button>
-      <button data-src="tab" title="Share a tab + Also share tab audio (Chrome)">Tab audio</button>
-      <button data-src="input" title="Microphone, or a loopback device like BlackHole">Input device</button>
-      <button data-src="file">Audio file…</button>
+      <button data-src="demo" data-tip="Play a built-in demo beat. No setup needed.">Demo</button>
+      <button data-src="system" data-tip="React to everything your computer plays.&#10;Chrome: share Entire screen and turn on “Share system audio”.">System audio</button>
+      <button data-src="tab" data-tip="React to one browser tab, like YouTube or Spotify in the browser.&#10;Chrome: pick the tab and turn on “Also share tab audio”.">Tab audio</button>
+      <button data-src="input" data-tip="Listen to a microphone, or to a loopback device like BlackHole.">Input device</button>
+      <button data-src="file" data-tip="Play an audio file from your computer.">Audio file…</button>
     </div>
-    <label class="row"><span>Input device</span><select id="device"><option value="">Default</option></select></label>
-    <div class="btns"><button id="mute">Mute demo / file</button></div>
-    <label class="row"><span>Sensitivity</span><input id="sens" type="range" min="0.5" max="2" step="0.05"></label>
-    <label class="row"><span>Beat threshold</span><input id="beatK" type="range" min="0.8" max="3" step="0.1" title="Higher = only strong kicks count"></label>
-    <label class="row"><span>Intensity</span><input id="intensity" type="range" min="0" max="1.5" step="0.05" title="Master amount for every effect"></label>
-    <label class="row"><span>Resolution</span><select id="scale"><option value="1">Full</option><option value="0.75">75%</option><option value="0.5">50%</option></select></label>
+    <label class="row" data-tip="Which microphone or loopback device the Input device source listens to."><span>Input device</span><select id="device"><option value="">Default</option></select></label>
+    <div class="btns"><button id="mute" data-tip="Silence the demo or audio file. The visuals keep reacting to it.">Mute demo / file</button></div>
+    <label class="row" data-tip="Boosts the incoming sound. Raise it if the visuals feel sleepy, lower it if everything is maxed out."><span>Sensitivity</span><input id="sens" type="range" min="0.5" max="2" step="0.05"></label>
+    <label class="row" data-tip="How hard a hit must be to count as a beat. Higher means only strong kicks trigger beat effects."><span>Beat threshold</span><input id="beatK" type="range" min="0.8" max="3" step="0.1"></label>
+    <label class="row" data-tip="Master amount for every effect. 0 is calm, 1 is as designed, 1.5 is extra wild."><span>Intensity</span><input id="intensity" type="range" min="0" max="1.5" step="0.05"></label>
+    <label class="row" data-tip="Render resolution. Lower it if playback stutters on a slower machine."><span>Resolution</span><select id="scale"><option value="1">Full</option><option value="0.75">75%</option><option value="0.5">50%</option></select></label>
   </details>
 
-  <details open><summary>Looks</summary>
+  <details open><summary data-tip="Your saved looks plus the built-in templates. Click a look to show it. Tick it to add it to the active set.">Looks</summary>
     <ul id="looks"></ul>
-    <div class="btns"><button id="save" title="⌘S">Save</button><button id="saveAs">Save as new…</button><button id="revert">Revert</button></div>
-    <div class="btns"><button id="snap" title="S">📸 Snapshot</button><button id="rand" title="R">🎲 Randomize</button><button id="rename">Rename</button><button id="del">Delete</button></div>
+    <div class="btns"><button id="save" class="primary" data-tip="Save your changes to this look. A template is saved as a new look of your own.&#10;Shortcut: ⌘S">Save</button><button id="saveAs" data-tip="Save the current look under a new name and keep the original.">Save as new…</button><button id="revert" data-tip="Throw away unsaved changes to this look.">Revert</button></div>
+    <div class="btns"><button id="snap" data-tip="Save the current look as a numbered copy and add it to the set.&#10;Shortcut: S">📸 Snapshot</button><button id="rand" data-tip="Generate a random look to explore. It isn't kept until you Save or Snapshot it.&#10;Shortcut: R">🎲 Randomize</button><button id="rename" data-tip="Rename this look.">Rename</button><button id="del" data-tip="Delete this look from your library and from every set.">Delete</button></div>
     <p class="hint">● = unsaved changes. Tick a look to add it to the active set.</p>
   </details>
 
-  <details open><summary>Set</summary>
-    <label class="row"><span>Active set</span><select id="setSel"></select></label>
-    <div class="btns"><button id="setNew">New set</button><button id="setRename">Rename</button><button id="setDel">Delete</button></div>
+  <details open><summary data-tip="A set is a playlist of looks that rotates on the beat. Theme, rotation and background moments are saved with each set.">Set</summary>
+    <label class="row" data-tip="The set that is playing."><span>Active set</span><select id="setSel"></select></label>
+    <div class="btns"><button id="setNew" data-tip="Create a new set that starts with the current look.">New set</button><button id="setRename" data-tip="Rename this set.">Rename</button><button id="setDel" data-tip="Delete this set. Its looks stay in your library.">Delete</button></div>
     <ol id="setItems"></ol>
-    <label class="row"><span>Theme</span><select id="theme" title="C cycles themes"></select></label>
-    <h3>Rotation</h3>
-    <label class="row"><span>Auto-rotate</span><input id="rotOn" type="checkbox"></label>
-    <label class="row"><span>Switch every</span><select id="rotEvery"><option value="8">8 beats</option><option value="16">16 beats</option><option value="32">32 beats</option><option value="64">64 beats</option></select></label>
-    <label class="row"><span>Switch on drops</span><input id="rotDrops" type="checkbox"></label>
-    <label class="row"><span>Drop sensitivity</span><input id="dropSens" type="range" min="0" max="1" step="0.05"></label>
-    <label class="row"><span>Order</span><select id="rotOrder"><option value="seq">In order</option><option value="shuffle">Shuffle</option></select></label>
-    <label class="row"><span>Transition</span><select id="rotStyle"><option value="random">Random mix</option><option value="zoom">Zoom punch</option><option value="iris">Iris</option><option value="glitch">Glitch</option><option value="burn">Burn</option><option value="swirl">Swirl</option><option value="fade">Crossfade</option><option value="cut">Cut</option></select></label>
-    <label class="row"><span>Transition length</span><select id="rotFade"><option value="0.6">0.6 s</option><option value="1.2">1.2 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label>
-    <h3>Background moments</h3>
-    <label class="row"><span>Texture</span><select id="momStyle" title="Textures everything behind the shapes for a few bars"></select></label>
-    <label class="row"><span>Trigger</span><select id="momTrigger"><option value="both">Drops + surges</option><option value="drops">Drops only</option><option value="peaks">Surges only</option><option value="bars">Every 32 beats</option><option value="manual">Only on T key</option></select></label>
-    <label class="row"><span>Length</span><select id="momLen"><option value="4">4 beats</option><option value="8">8 beats</option><option value="16">16 beats</option><option value="32">32 beats</option></select></label>
+    <label class="row" data-tip="Restyles every look in this set (colours, glow, grain, trails) so they feel like one show.&#10;Shortcut: C cycles themes"><span>Theme</span><select id="theme"></select></label>
+    <h3 data-tip="Switch to the next look in the set automatically.">Rotation</h3>
+    <label class="row" data-tip="Move through the looks in this set automatically.&#10;Shortcut: Space pauses and resumes"><span>Auto-rotate</span><input id="rotOn" type="checkbox"></label>
+    <label class="row" data-tip="How many beats each look plays before the next one."><span>Switch every</span><select id="rotEvery"><option value="8">8 beats</option><option value="16">16 beats</option><option value="32">32 beats</option><option value="64">64 beats</option></select></label>
+    <label class="row" data-tip="Also switch when the bass comes back in after a breakdown."><span>Switch on drops</span><input id="rotDrops" type="checkbox"></label>
+    <label class="row" data-tip="How deep a breakdown must be to count as a drop. Higher catches subtler drops."><span>Drop sensitivity</span><input id="dropSens" type="range" min="0" max="1" step="0.05"></label>
+    <label class="row" data-tip="Play the set top to bottom, or in random order."><span>Order</span><select id="rotOrder"><option value="seq">In order</option><option value="shuffle">Shuffle</option></select></label>
+    <label class="row" data-tip="How one look turns into the next. Random mix picks a different one each time."><span>Transition</span><select id="rotStyle"><option value="random">Random mix</option><option value="zoom">Zoom punch</option><option value="iris">Iris</option><option value="glitch">Glitch</option><option value="burn">Burn</option><option value="swirl">Swirl</option><option value="fade">Crossfade</option><option value="cut">Cut</option></select></label>
+    <label class="row" data-tip="How long the transition takes."><span>Transition length</span><select id="rotFade"><option value="0.6">0.6 s</option><option value="1.2">1.2 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label>
+    <h3 data-tip="Short bursts of texture, like VHS or halftone, behind the shapes for a few beats.">Background moments</h3>
+    <label class="row" data-tip="Which texture a moment uses. Theme's texture follows the current theme."><span>Texture</span><select id="momStyle"></select></label>
+    <label class="row" data-tip="What sets off a moment. A surge is a sudden jump in loudness.&#10;Shortcut: T fires one by hand"><span>Trigger</span><select id="momTrigger"><option value="both">Drops + surges</option><option value="drops">Drops only</option><option value="peaks">Surges only</option><option value="bars">Every 32 beats</option><option value="manual">Only on T key</option></select></label>
+    <label class="row" data-tip="How long each moment lasts."><span>Length</span><select id="momLen"><option value="4">4 beats</option><option value="8">8 beats</option><option value="16">16 beats</option><option value="32">32 beats</option></select></label>
     <p class="hint">← → skip · 1–9 jump · Space pause · S snapshot · ⌘S save · T moment · C theme · R randomize · F fullscreen · H hide</p>
   </details>
 
-  <details><summary>Library</summary>
+  <details><summary data-tip="Keep your looks and sets in a file on disk, or move them between browsers.">Library</summary>
     <p id="libInfo" class="hint"></p>
-    <div class="btns"><button id="libOpen">Open library…</button><button id="libNew">New library file…</button><button id="libReconnect" hidden>Reconnect</button></div>
-    <div class="btns"><button id="export">Export</button><button id="import">Import</button></div>
+    <div class="btns"><button id="libOpen" data-tip="Link an existing library file. Changes save to it automatically.">Open library…</button><button id="libNew" data-tip="Create a new library file and save your looks to it automatically.">New library file…</button><button id="libReconnect" hidden data-tip="Give the browser access to your library file again. It asks after a reload.">Reconnect</button></div>
+    <div class="btns"><button id="export" data-tip="Download all your looks and sets as a JSON file.">Export</button><button id="import" data-tip="Add looks and sets from an exported file. Where both copies exist, the newer one wins.">Import</button></div>
   </details>
 
-  <details><summary>Video clips</summary>
-    <div class="btns"><button id="clipFolder">Clip folder…</button><button id="clipFiles">Clip files…</button><button id="clipTab">Capture a tab</button><button id="clipStop">Stop</button></div>
+  <details><summary data-tip="Load your own videos to mix into looks, cut on the beat.">Video clips</summary>
+    <div class="btns"><button id="clipFolder" data-tip="Load every video in a folder.">Clip folder…</button><button id="clipFiles" data-tip="Pick one or more video files.">Clip files…</button><button id="clipTab" data-tip="Use a live browser tab, like a YouTube video, as the video.">Capture a tab</button><button id="clipStop" data-tip="Stop and unload the video.">Stop</button></div>
     <p id="clipInfo" class="hint">No video loaded.</p>
     <p class="hint">Then set "Use video" under Media for a look.</p>
   </details>
 
-  <div id="edit"></div>
+  <div id="edit"><h2 data-tip="Everything below changes the look on screen. Changes are drafts (●) until you Save.">Edit this look</h2></div>
 </aside>
+<div id="tip" class="ui" role="tooltip"></div>
 
 <input id="audioFile" type="file" accept="audio/*" hidden>
 <input id="videoFiles" type="file" accept="video/*" multiple hidden>
@@ -373,7 +408,7 @@ const BUILTINS = [
   def('ridges', 'Ridgelines', { form: { type: 'ridges', detail: 0.4 }, render: { type: 'filled', width: 1.6 }, ripple: { type: 'roll', size: 1.6 }, palette: 'mono', background: { type: 'solid' }, post: { bloom: 0.5, grain: 0.45, vignette: 0.8 }, wiring: { push: W('bass', 1.1), spin: W('mids', 0.6), bgpulse: W('bass', 0), sparks: W('beat', 0), chroma: W('beat', 0.5), warp: W('beat', 0.3), zoom: W('beat', 0.1) } }),
   def('swarm', 'Swarm', { form: { type: 'cloud', detail: 0.45 }, render: { type: 'dots', blend: 'add', width: 2.5, trails: 0.75 }, ripple: { type: 'shock', size: 1.4 }, palette: 'sunset', background: { type: 'solid' }, post: { bloom: 1.2 }, wiring: { push: W('bass', 0.8), sparks: W('beat', 0.4) } }),
   def('pond', 'Pond', { form: { type: 'grid', detail: 0.35 }, render: { type: 'dots', blend: 'add', width: 4 }, ripple: { type: 'stone', size: 1.8 }, palette: 'ocean', background: { type: 'gradient' }, post: { bloom: 1.1 }, wiring: { push: W('bass', 1), sparks: W('beat', 0), warp: W('beat', 0.4), bgpulse: W('bass', 0.6) } }),
-  def('mandala', 'Mandala', { form: { type: 'petals', detail: 0.5 }, render: { type: 'filled', width: 1.8 }, ripple: { type: 'bloom' }, palette: 'sunset', post: { bloom: 0.5 }, wiring: { push: W('bass', 0.6), rough: W('highs', 0.6), sparks: W('beat', 0.7) } }),
+  def('mandala', 'Mandala', { form: { type: 'arches', detail: 0.4, sides: 8 }, render: { type: 'filled', width: 2.4 }, ripple: { type: 'shock', size: 1.2 }, palette: 'sunset', background: { type: 'solid' }, post: { bloom: 0.8, grain: 0.2 }, wiring: { push: W('bass', 0.5), rough: W('highs', 0.25), spin: W('mids', 0.7), sparks: W('beat', 0.3), chroma: W('beat', 0.5) } }),
   def('echo', 'Echo Kaleido', { form: { type: 'blob', detail: 0.6 }, render: { type: 'lines', blend: 'add', width: 2.2 }, ripple: { type: 'shock' }, palette: 'acid', symmetry: { type: 'kaleido', segments: 8 }, feedback: { amount: 0.85, zoom: 0.4, twist: 0.3 }, background: { type: 'solid' }, post: { bloom: 1 }, camera: { wander: 0.35 }, wiring: { drift: W('mids', 0.5), sparks: W('beat', 0.5), chroma: W('beat', 0.8) } }),
   def('nova', 'Supernova', { form: { type: 'petals', detail: 0.8, sides: 5 }, render: { type: 'lines', blend: 'add', width: 2.4 }, ripple: { type: 'shock', size: 1.6 }, palette: 'cyber', symmetry: { type: 'kaleido', segments: 12 }, feedback: { amount: 0.75, zoom: 0.7, twist: -0.4 }, background: { type: 'stars' }, post: { bloom: 1.3, grain: 0.3 }, camera: { wander: 0.2 }, wiring: { kick: W('beat', 0.3), push: W('bass', 1.2), zoom: W('beat', 0.35), sparks: W('beat', 1), warp: W('beat', 1), chroma: W('beat', 1) } }),
 ];
@@ -401,74 +436,74 @@ const opt = (...xs) => xs.map(x => Array.isArray(x) ? x : [x, x[0].toUpperCase()
 const SRC = opt('bass', 'mids', 'highs', 'beat', 'none');
 const SCHEMA = [
   ['Form', [
-    ['form.type', 'Shape', opt('blob', 'rings', 'ridges', 'cloud', 'grid', 'petals')],
-    ['form.size', 'Size', [0.3, 1.6, 0.01]],
-    ['form.detail', 'Detail', [0, 1, 0.01]],
-    ['form.sides', 'Sides / petals', [3, 12, 1]],
-    ['form.fly', 'Fly-through (rings)', [-2, 6, 0.1]],
-    ['wiring.fly', 'Fly boost', 'wire'],
-  ]],
+    ['form.type', 'Shape', opt('blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', ['arches', 'Arch vortex']), 'The base shape: a blob, a tunnel of rings, ridgelines, a particle cloud, a dot grid, flower petals, or a vortex of rainbow arches.'],
+    ['form.size', 'Size', [0.3, 1.6, 0.01], 'Overall size of the shape.'],
+    ['form.detail', 'Detail', [0, 1, 0.01], 'How much structure the shape has: more layers, rings, lines or points.'],
+    ['form.sides', 'Sides / petals', [3, 12, 1], 'Number of sides on each ring, petals on the flower, or arches per ring. Only affects Rings, Petals and Arch vortex.'],
+    ['form.fly', 'Fly-through (rings)', [-2, 6, 0.1], 'Speed of travel through the ring tunnel. Negative flies backwards. Only affects Rings.'],
+    ['wiring.fly', 'Fly boost', 'wire', 'Speeds up the tunnel fly-through with the music.'],
+  ], 'The base shape everything else reacts around.'],
   ['Render', [
-    ['render.type', 'Style', opt('lines', ['filled', 'Filled glow'], 'dots')],
-    ['render.blend', 'Blend', opt('normal', ['add', 'Additive glow'])],
-    ['render.width', 'Line / dot size', [0.5, 6, 0.1]],
-    ['render.trails', 'Trails', [0, 0.95, 0.01]],
-  ]],
+    ['render.type', 'Style', opt('lines', ['filled', 'Filled glow'], 'dots'), 'Draw the shape as lines, glowing filled layers, or dots.'],
+    ['render.blend', 'Blend', opt('normal', ['add', 'Additive glow']), 'Additive glow makes overlapping parts brighten each other, for a punchier neon look.'],
+    ['render.width', 'Line / dot size', [0.5, 6, 0.1], 'Thickness of lines, or size of dots.'],
+    ['render.trails', 'Trails', [0, 0.95, 0.01], 'How long movement leaves a fading trail. 0 is crisp; high values smear into streaks.'],
+  ], 'How the shape is drawn.'],
   ['Ripple', [
-    ['ripple.type', 'Effect', opt(['rim', 'Rim run'], ['shock', 'Shockwave'], ['stone', 'Stone drop'], ['roll', 'Layer roll'], ['bloom', 'Bloom echo'])],
-    ['ripple.speed', 'Speed', [0.3, 3, 0.05]],
-    ['ripple.size', 'Size', [0, 2.5, 0.05]],
-  ]],
+    ['ripple.type', 'Effect', opt(['rim', 'Rim run'], ['shock', 'Shockwave'], ['stone', 'Stone drop'], ['roll', 'Layer roll'], ['bloom', 'Bloom echo']), 'The kind of wave: runs along the edge, blasts outward, spreads like a stone dropped in water, rolls through the layers, or blooms out as echo copies.'],
+    ['ripple.speed', 'Speed', [0.3, 3, 0.05], 'How fast ripples travel.'],
+    ['ripple.size', 'Size', [0, 2.5, 0.05], 'How big each ripple is.'],
+  ], 'Waves that run through the shape on each hit. What fires them is set under Wiring › Ripple.'],
   ['Wiring', [
-    ['wiring.push', 'Push out', 'wire'],
-    ['wiring.rough', 'Roughness', 'wire'],
-    ['wiring.spin', 'Spin', 'wire'],
-    ['wiring.hue', 'Colour shift', 'wire'],
-    ['wiring.ripple', 'Ripple', 'wire'],
-  ]],
+    ['wiring.push', 'Push out', 'wire', 'The shape swells outward.'],
+    ['wiring.rough', 'Roughness', 'wire', 'Edges get jagged and noisy.'],
+    ['wiring.spin', 'Spin', 'wire', 'The shape spins faster.'],
+    ['wiring.hue', 'Colour shift', 'wire', 'Colours slide around the palette.'],
+    ['wiring.ripple', 'Ripple', 'wire', 'Fires a ripple on each hit of the chosen sound. The style is set under Ripple.'],
+  ], 'Connect the shape to the music. Each row picks a sound (bass, mids, highs or beat) and how strongly it reacts.'],
   ['Post FX', [
-    ['post.bloom', 'Glow', [0, 2, 0.05]],
-    ['wiring.bloom', 'Glow pulse', 'wire'],
-    ['wiring.chroma', 'Colour split', 'wire'],
-    ['wiring.warp', 'Shockwave', 'wire'],
-    ['post.grain', 'Film grain', [0, 1, 0.01]],
-    ['post.vignette', 'Vignette', [0, 1, 0.01]],
-  ]],
+    ['post.bloom', 'Glow', [0, 2, 0.05], 'Base amount of glow around bright areas.'],
+    ['wiring.bloom', 'Glow pulse', 'wire', 'The glow flares up with the music.'],
+    ['wiring.chroma', 'Colour split', 'wire', 'Red, green and blue split apart for a glitchy fringe.'],
+    ['wiring.warp', 'Shockwave', 'wire', 'A lens-warp ring blasts out across the whole screen.'],
+    ['post.grain', 'Film grain', [0, 1, 0.01], 'Analogue film noise over everything.'],
+    ['post.vignette', 'Vignette', [0, 1, 0.01], 'Darkens the edges of the screen to pull focus to the centre.'],
+  ], 'Screen-wide effects applied on top of everything.'],
   ['Sparks', [
-    ['wiring.sparks', 'Burst', 'wire'],
-    ['sparks.speed', 'Speed', [0.3, 3, 0.05]],
-  ]],
-  ['Palette', [['palette', 'Colours', opt(...Object.keys(PALETTES))]]],
+    ['wiring.sparks', 'Burst', 'wire', 'Sparks fly off the shape. Amount sets how many.'],
+    ['sparks.speed', 'Speed', [0.3, 3, 0.05], 'How fast sparks fly.'],
+  ], 'Particle bursts that fly off the shape.'],
+  ['Palette', [['palette', 'Colours', opt(...Object.keys(PALETTES)), 'The colour scheme for the shape and background.']], 'The colour scheme. A set Theme can override it.'],
   ['Symmetry', [
-    ['symmetry.type', 'Type', opt('none', 'mirror', ['kaleido', 'Kaleidoscope'])],
-    ['symmetry.segments', 'Segments', opt([4, '4'], [6, '6'], [8, '8'], [10, '10'], [12, '12'], [16, '16'])],
-  ]],
+    ['symmetry.type', 'Type', opt('none', 'mirror', ['kaleido', 'Kaleidoscope']), 'Mirror flips the image; Kaleidoscope repeats it in wedges around the centre.'],
+    ['symmetry.segments', 'Segments', opt([4, '4'], [6, '6'], [8, '8'], [10, '10'], [12, '12'], [16, '16']), 'Number of kaleidoscope wedges.'],
+  ], 'Mirror the image into patterns.'],
   ['Camera', [
-    ['camera.wander', 'Centre wander', [0, 1, 0.01]],
-    ['camera.wanderSpeed', 'Wander speed', [0, 3, 0.05]],
-    ['wiring.kick', 'Centre kick', 'wire'],
-    ['camera.smooth', 'Smoothness', [0, 1, 0.01]],
-    ['wiring.zoom', 'Zoom pulse', 'wire'],
-    ['wiring.shake', 'Shake', 'wire'],
-    ['wiring.drift', 'Drift', 'wire'],
-  ]],
+    ['camera.wander', 'Centre wander', [0, 1, 0.01], 'How far the shape drifts around the screen.'],
+    ['camera.wanderSpeed', 'Wander speed', [0, 3, 0.05], 'How fast it drifts.'],
+    ['wiring.kick', 'Centre kick', 'wire', 'Throws the shape to a new spot on each hit.'],
+    ['camera.smooth', 'Smoothness', [0, 1, 0.01], 'How gently the shape glides when it moves. Low is snappy, high is floaty.'],
+    ['wiring.zoom', 'Zoom pulse', 'wire', 'The view punches in.'],
+    ['wiring.shake', 'Shake', 'wire', 'The view shakes.'],
+    ['wiring.drift', 'Drift', 'wire', 'The whole view slowly rotates.'],
+  ], 'How the view moves.'],
   ['Feedback echo', [
-    ['feedback.amount', 'Amount', [0, 0.95, 0.01]],
-    ['feedback.zoom', 'Zoom', [-1, 1, 0.02]],
-    ['feedback.twist', 'Twist', [-1, 1, 0.02]],
-  ]],
+    ['feedback.amount', 'Amount', [0, 0.95, 0.01], 'How strong the echo is. 0 is off; high values make long hypnotic tunnels.'],
+    ['feedback.zoom', 'Zoom', [-1, 1, 0.02], 'Echoes stream outward (positive) or inward (negative).'],
+    ['feedback.twist', 'Twist', [-1, 1, 0.02], 'Echoes spiral. Negative spins the other way.'],
+  ], 'Each frame is drawn over a slightly zoomed and twisted copy of the last, for infinite tunnel trails.'],
   ['Background', [
-    ['background.type', 'Type', opt('solid', 'gradient', ['noise', 'Soft clouds'], 'stars')],
-    ['wiring.bgpulse', 'Pulse', 'wire'],
-  ]],
+    ['background.type', 'Type', opt('solid', 'gradient', ['noise', 'Soft clouds'], 'stars'), 'Solid colour, a gradient, soft moving clouds, or a starfield.'],
+    ['wiring.bgpulse', 'Pulse', 'wire', 'The background brightens with the music.'],
+  ], 'What sits behind the shape.'],
   ['Media', [
-    ['media.mode', 'Use video', opt('off', 'background', ['inside', 'Inside shape'], ['blend', 'Blend over'])],
-    ['media.blend', 'Blend mode', opt('screen', 'overlay', 'multiply', 'difference', ['lighter', 'Add'])],
-    ['media.opacity', 'Opacity', [0, 1, 0.01]],
-    ['media.cut', 'Cut clip every', opt([0, 'never'], [1, '1 beat'], [2, '2 beats'], [4, '4 beats'], [8, '8 beats'], [16, '16 beats'], [32, '32 beats'])],
-    ['wiring.stutter', 'Stutter (jump)', 'wire'],
-    ['wiring.speed', 'Speed up', 'wire'],
-  ]],
+    ['media.mode', 'Use video', opt('off', 'background', ['inside', 'Inside shape'], ['blend', 'Blend over']), 'Where your video appears: behind everything, only inside the shape, or blended over the top.'],
+    ['media.blend', 'Blend mode', opt('screen', 'overlay', 'multiply', 'difference', ['lighter', 'Add']), 'How the video mixes with the visuals. Only used by Blend over.'],
+    ['media.opacity', 'Opacity', [0, 1, 0.01], 'How visible the video is.'],
+    ['media.cut', 'Cut clip every', opt([0, 'never'], [1, '1 beat'], [2, '2 beats'], [4, '4 beats'], [8, '8 beats'], [16, '16 beats'], [32, '32 beats']), 'Jump to the next clip every few beats.'],
+    ['wiring.stutter', 'Stutter (jump)', 'wire', 'Jumps to a random moment in the clip. Amount sets how often.'],
+    ['wiring.speed', 'Speed up', 'wire', 'Plays the video faster.'],
+  ], 'Mix your own video into this look. Load clips under Video clips first.'],
 ];
 
 function sanitize(raw) {
@@ -519,6 +554,7 @@ function buildForm(f, ex, ey) {
     const L = 12 + Math.round(det * 28), M = 180, x0 = -ex * 1.05, top = -ey * 0.5, bot = ey * 0.5, gap = (bot - top) / L; // equal margins top and bottom
     for (let l = L - 1; l >= 0; l--) { // l = 0 is the front line; drawn back to front so front lines hide the rest
       const y = bot - l * gap, p = path(false, 'ridge', l / (L - 1), 0, 2);
+      p.occlude = true;
       for (let j = 0; j <= M; j++) {
         const u = j / M, win = Math.exp(-((u - 0.5) ** 2) / 0.01); // same peak width on screen as the old, shorter lines
         add(p, x0 - 2 * x0 * u, y - win * gap * 0.6, 0, -1, u, win * gap * 9 * s, win * gap * 25);
@@ -537,6 +573,28 @@ function buildForm(f, ex, ey) {
       for (let c = 0; c < cols; c++) {
         const x = (c - (cols - 1) / 2) * sp, d = Math.hypot(x, y) || 1e-6;
         add(p, x, y, x / d, y / d, c / (cols - 1), 0.2 * s * Math.exp(-(d * d) / 0.72), sp * 1.5);
+      }
+    }
+  } else if (f.type === 'arches') { // seigaiha vortex: rings of nested half-circle arches shrinking towards a spiral
+    // q = how much each ring shrinks: the next ring's arches sit in the valleys between this ring's
+    const N = f.sides, K = 4 + Math.round(det * 6), h = Math.PI / N, q = Math.cos(h) - 0.57 * Math.sin(h), R0 = s * 0.92, rs = R0 * q ** (K - 1) * 0.9;
+    for (let arm = 0; arm < 3; arm++) { // the spiral first, so the innermost arches cover its ends
+      const p = path(false, 'swirl', arm / 2, 1.5, 0);
+      p.lw = Math.max(0.3, q ** (K - 1));
+      for (let i = 0; i <= 60; i++) { const k = i / 60, a = k * 2.5 * TAU + arm * TAU / 3, d = rs * k; add(p, Math.cos(a) * d, Math.sin(a) * d, Math.cos(a), Math.sin(a), k, d, d * 1.5); }
+    }
+    for (let k = K - 1; k >= 0; k--) { // innermost ring first: outer arches overlap the ones deeper in
+      const r = R0 * q ** k, a = r * Math.sin(h) * 1.15;
+      for (let j = 0; j < N; j++) {
+        const th = (j + k * 0.5) * 2 * h + k * 0.15, cx = Math.cos(th) * r, cy = Math.sin(th) * r; // half a step per ring, plus a twist
+        for (let b = 0; b < 5; b++) { // 5 nested bands; the outermost hides whatever is behind the whole arch
+          const rho = a * (1 - b / 5), M = 8 + Math.round(rho * 120), p = path(false, 'arch', b / 4, 0.1 + 0.12 * k, 0); // inner rings turn faster
+          Object.assign(p, { occlude: b === 0, lw: Math.max(0.3, q ** k) });
+          for (let i = 0; i <= M; i++) { // dome bulges towards the centre
+            const ph = th + Math.PI / 2 + i / M * Math.PI, nx = Math.cos(ph), ny = Math.sin(ph);
+            add(p, cx + nx * rho, cy + ny * rho, nx, ny, i / M, rho * 0.3, rho * 1.5);
+          }
+        }
       }
     }
   } else { // petals: layered rose curves
@@ -612,16 +670,16 @@ function deform(deck, t) {
 function drawForm(c, deck, ghost = 0) {
   const L = deck.L, R = L.render, pal = PALETTES[L.palette], lw = R.width / deck.U, hs = wire(L, 'hue') * 50;
   c.globalCompositeOperation = R.blend === 'add' ? 'lighter' : 'source-over';
-  c.lineWidth = lw; c.lineJoin = 'round';
+  c.lineJoin = 'round';
   for (const p of deck.paths) {
-    const hue = lerp(pal.h[0], pal.h[1], p.layer) + hs, n = p.ox.length;
-    c.globalAlpha = p.alpha;
+    const hue = lerp(pal.h[0], pal.h[1], p.layer) + hs, n = p.ox.length, pw = lw * (p.lw || 1);
+    c.globalAlpha = p.alpha; c.lineWidth = pw;
     const style = ghost ? 'lines' : R.type === 'filled' && p.kind === 'row' ? 'dots' : R.type;
     if (style === 'dots' || (style === 'filled' && p.kind === 'particle')) {
       const big = style === 'filled' ? 2.5 : 1;
       // ponytail: one fillStyle per dot; batch by colour if big clouds get slow
       for (let i = 0; i < (p.kind === 'particle' ? 1 : n); i++) {
-        const lift = p.lift[i], sz = lw * 1.5 * big * (1 + lift * 3);
+        const lift = p.lift[i], sz = pw * 1.5 * big * (1 + lift * 3);
         c.fillStyle = `hsla(${hue + lift * 30},${pal.s}%,${Math.min(95, pal.l + lift * 40)}%,0.9)`;
         c.fillRect(p.ox[i] - sz / 2, p.oy[i] - sz / 2, sz, sz);
       }
@@ -638,10 +696,9 @@ function drawForm(c, deck, ghost = 0) {
         g.addColorStop(0.55, `hsla(${hue},${pal.s}%,${pal.l - 8}%,0.5)`);
         g.addColorStop(1, `hsla(${pal.h[0] + hs},${pal.s}%,${pal.l - 25}%,0.12)`);
         c.fillStyle = g; c.fill(line);
-      } else { // open line: fill down to its baseline so it hides what's behind
-        const area = new Path2D(line);
-        area.lineTo(p.bx[n - 1] + p.cx, p.by[n - 1] + p.cy); area.lineTo(p.bx[0] + p.cx, p.by[0] + p.cy); area.closePath();
-        c.fillStyle = pal.bg; c.fill(area);
+      } else if (p.occlude && R.blend !== 'add') { // open line: erase lines behind it, down to the line joining its ends.
+        // Erased, not painted over, so the background or video shows through.
+        c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000'; c.fill(line); c.globalCompositeOperation = 'source-over';
       }
     }
     const light = Math.min(92, pal.l + 15), a = ghost || 1;
@@ -931,7 +988,7 @@ vec3 scene(vec2 p, float l) {
   if (style == 5) { // burn: the old look burns away along noise, with a hot edge
     vec2 np = p * vec2(asp, 1.0);
     float n = vnoise(np * 5.0) * 0.65 + vnoise(np * 17.0) * 0.35, front = t * 1.2 - 0.1;
-    vec3 c = mix(A(p, l), B(p, l), smoothstep(n + 0.015, n - 0.015, front));
+    vec3 c = mix(A(p, l), B(p, l), smoothstep(n - 0.015, n + 0.015, front));
     return c + exp(-pow((front - n) / 0.035, 2.0)) * (vec3(1.0, 0.45, 0.15) * 0.9 + B(p, l + 2.0) * 2.0) * (1.0 - t * 0.5);
   }
   // swirl: the old look twists into a vortex, the new one untwists out of it
@@ -1333,14 +1390,16 @@ function rotationTick(t) {
 const editFields = [];
 function buildEditor() {
   const root = $('#edit');
-  SCHEMA.forEach(([title, fields], si) => {
+  SCHEMA.forEach(([title, fields, about], si) => {
     const det = document.createElement('details'), sum = document.createElement('summary');
-    det.open = si < 5;
+    det.open = si < 2;
     sum.textContent = title;
+    sum.dataset.tip = about;
     det.append(sum);
-    for (const [path, label, spec] of fields) {
+    for (const [path, label, spec, tip] of fields) {
       const row = document.createElement('label'), name = document.createElement('span');
       row.className = 'row'; name.textContent = label; row.append(name);
+      row.dataset.tip = spec === 'wire' ? tip + '\nPick the sound that drives it; the slider sets how much.' : tip;
       const mkSelect = opts => { const s = document.createElement('select'); opts.forEach(([v, l]) => s.add(new Option(l, v))); return s; };
       const mkRange = ([min, max, stp]) => Object.assign(document.createElement('input'), { type: 'range', min, max, step: stp });
       const bind = (el, p) => {
@@ -1366,13 +1425,23 @@ function buildEditor() {
     root.append(det);
   });
 }
-function refreshEditor() { for (const { el, p } of editFields) el.value = get(current, p); }
+function refreshEditor() { for (const { el, p } of editFields) el.value = get(current, p); syncOutputs(); }
+// slider value readouts and filled tracks; a wired effect with no sound is dimmed
+function syncOutputs() {
+  for (const r of document.querySelectorAll('#panel input[type=range]')) {
+    const row = r.parentNode, out = row.querySelector('output');
+    if (out) out.textContent = (+r.value).toFixed(r.step < 0.1 ? 2 : r.step < 1 ? 1 : 0);
+    r.style.setProperty('--p', (r.value - r.min) / (r.max - r.min) * 100 + '%');
+    row.classList.toggle('off', row.querySelector('select')?.value === 'none');
+  }
+}
 
 function refreshLooks() {
   const set = activeSet(), inSet = new Set(set.items);
   const item = (l, tag) => {
     const li = document.createElement('li'), cb = document.createElement('input'), name = document.createElement('span');
-    cb.type = 'checkbox'; cb.checked = inSet.has(l.id); cb.disabled = !savedLook(l.id); cb.title = `In the set "${set.name}"`;
+    cb.type = 'checkbox'; cb.checked = inSet.has(l.id); cb.disabled = !savedLook(l.id);
+    cb.dataset.tip = cb.disabled ? 'Save this look first to add it to a set.' : `Tick to include it in the set "${set.name}".`;
     cb.onclick = e => {
       e.stopPropagation();
       set.items = cb.checked ? [...set.items, l.id] : set.items.filter(id => id !== l.id);
@@ -1401,7 +1470,7 @@ function refreshSet() {
   const set = activeSet(), ids = rotationIds();
   $('#setSel').replaceChildren(...lib.sets.map(s => new Option(s.name, s.id)));
   $('#setSel').value = set.id;
-  const btn = (label, title, fn) => Object.assign(document.createElement('button'), { textContent: label, title, onclick: fn });
+  const btn = (label, tip, fn) => { const b = Object.assign(document.createElement('button'), { textContent: label, onclick: fn }); b.dataset.tip = tip; return b; };
   const move = (id, dir) => () => {
     const a = set.items, j = a.indexOf(id), k = j + dir;
     if (k < 0 || k >= a.length) return;
@@ -1492,7 +1561,7 @@ function cycleTheme() {
 function randomLook() {
   const fresh = sanitize(merge(clone(BASE), {
     id: 'random', name: '🎲 Random',
-    form: { type: pick(['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals']), size: rand(0.7, 1.2), detail: Math.random(), sides: pick([3, 4, 5, 6, 8]), fly: rand(0, 3) },
+    form: { type: pick(['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches']), size: rand(0.7, 1.2), detail: Math.random(), sides: pick([3, 4, 5, 6, 8]), fly: rand(0, 3) },
     render: { type: pick(['lines', 'filled', 'dots']), blend: pick(['normal', 'add']), width: rand(1, 3), trails: pick([0, 0, 0.5, 0.8]) },
     ripple: { type: pick(['rim', 'shock', 'stone', 'roll', 'bloom']), speed: rand(0.6, 1.6), size: rand(0.8, 1.6) },
     palette: pick(Object.keys(PALETTES)),
@@ -1513,9 +1582,38 @@ function refreshSettings() {
     if (box) el.checked = !!obj[key];
     else { el.value = obj[key]; if (el.tagName === 'SELECT' && el.selectedIndex < 0) el.selectedIndex = 0; }
   }
+  syncOutputs();
+}
+
+// tooltips: one floating box beside the panel, filled from data-tip; text after a line break shows dimmed
+function wireTips() {
+  const tip = $('#tip');
+  let tipEl = null, timer;
+  const hide = () => { clearTimeout(timer); tipEl = null; tip.classList.remove('show'); };
+  const show = el => {
+    if (el === tipEl) return;
+    clearTimeout(timer); tipEl = el;
+    timer = setTimeout(() => {
+      const [main, more] = el.dataset.tip.split('\n');
+      tip.replaceChildren(main, ...more ? [Object.assign(document.createElement('small'), { textContent: more })] : []);
+      // left of the panel; below the control when there's no room (narrow screens, panel closed)
+      const r = el.getBoundingClientRect(), x = $('#panel').getBoundingClientRect().left - tip.offsetWidth - 12, below = x < 8;
+      tip.style.left = (below ? clamp(r.left, 8, innerWidth - tip.offsetWidth - 8) : x) + 'px';
+      tip.style.top = clamp(below ? r.bottom + 6 : r.top + r.height / 2 - tip.offsetHeight / 2, 8, innerHeight - tip.offsetHeight - 8) + 'px';
+      tip.classList.add('show');
+    }, tip.classList.contains('show') ? 0 : 350); // instant while gliding from one setting to the next
+  };
+  addEventListener('pointerover', e => { const el = !e.buttons && e.target.closest('[data-tip]'); el ? show(el) : hide(); });
+  addEventListener('pointerdown', hide); // out of the way while you drag a slider
+  addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el && e.target.matches(':focus-visible')) show(el); });
+  addEventListener('focusout', hide);
+  $('#panel').addEventListener('scroll', hide);
 }
 
 function wireUI() {
+  for (const r of document.querySelectorAll('#panel .row input[type=range]')) r.parentNode.append(document.createElement('output'));
+  $('#panel').addEventListener('input', syncOutputs);
+  wireTips();
   document.querySelectorAll('[data-src]').forEach(b => b.onclick = () => {
     if (b.dataset.src === 'file') $('#audioFile').click();
     else useSource(b.dataset.src, b.dataset.src === 'input' ? $('#device').value : undefined);
@@ -1642,6 +1740,7 @@ function frame(ms) {
   mediaTick();
 
   const dpr = (devicePixelRatio || 1) * G.scale, w = innerWidth, h = innerHeight, CW = Math.round(w * dpr), CH = Math.round(h * dpr);
+  if (!CW || !CH) return requestAnimationFrame(frame); // zero-size window (hidden or still laying out): nothing to draw yet
   for (const cv of [view, ...(postU ? [] : [comp]), shape, tmp, decks[0].canvas, decks[0].fb, decks[1].canvas, decks[1].fb]) if (cv.width !== CW || cv.height !== CH) { cv.width = CW; cv.height = CH; }
   const f = fade ? clamp((t - fade.t0) / fade.dur) : 1;
   if (fade && f >= 1) fade = null;
@@ -1685,7 +1784,7 @@ function selfTest() {
   const junk = sanitize(JSON.parse('{"palette":"nope","form":{"size":99,"type":"x"},"wiring":{"push":{"src":"evil","amt":9},"spin":"bad"},"__proto__":{"polluted":1}}'));
   if (junk.palette !== 'aurora' || junk.form.size !== 1.6 || junk.form.type !== 'blob' || junk.wiring.push.src !== 'none' || junk.wiring.push.amt !== 2
     || junk.wiring.spin.src !== 'mids' || ({}).polluted || junk.polluted) fails.push('sanitize let junk through');
-  for (const type of ['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals']) {
+  for (const type of ['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches']) {
     const ps = buildForm({ ...BASE.form, type }, 1.6, 1);
     if (!ps.length || ps.some(p => !p.ox.length || p.rmax !== p.rmax)) fails.push('form builds empty/NaN: ' + type);
   }
