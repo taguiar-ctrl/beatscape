@@ -389,6 +389,7 @@ const PALETTES = {
   vapor: { h: [300, 185], s: 80, l: 72, bg: '#0d0614' },
   blood: { h: [350, 375], s: 95, l: 52, bg: '#0a0203' },
   matrix: { h: [115, 145], s: 90, l: 55, bg: '#020803' },
+  indigo: { h: [218, 238], s: 55, l: 78, bg: '#0f1a4d' }, // near-white lines on indigo, like a seigaiha print
 };
 const W = (src, amt) => ({ src, amt });
 const BASE = {
@@ -403,11 +404,12 @@ const BASE = {
   background: { type: 'gradient' },
   media: { mode: 'off', blend: 'screen', opacity: 0.8, cut: 8 },
   sparks: { speed: 1 },
+  sea: { boats: 'oshi', fleet: 1, boatSize: 0.55, koi: 'mix', koiSize: 1, koiMax: 15, style: 'print' },
   post: { bloom: 0.8, grain: 0.25, vignette: 0.6 },
   wiring: {
     push: W('bass', 0.9), rough: W('highs', 1), spin: W('mids', 1), hue: W('mids', 1), ripple: W('beat', 1.2),
     zoom: W('beat', 0.2), shake: W('bass', 0), drift: W('mids', 0), bgpulse: W('bass', 0.3), stutter: W('beat', 0), speed: W('bass', 0),
-    sparks: W('beat', 0.6), bloom: W('bass', 0.7), chroma: W('beat', 0.7), warp: W('beat', 0.6), fly: W('bass', 0), kick: W('beat', 0),
+    sparks: W('beat', 0.6), bloom: W('bass', 0.7), chroma: W('beat', 0.7), warp: W('beat', 0.6), fly: W('bass', 0), kick: W('beat', 0), leap: W('beat', 0.5),
   },
 };
 const def = (id, name, patch) => merge(merge(clone(BASE), { id, name, builtin: true }), patch);
@@ -418,6 +420,7 @@ const BUILTINS = [
   def('swarm', 'Swarm', { form: { type: 'cloud', detail: 0.45 }, render: { type: 'dots', blend: 'add', width: 2.5, trails: 0.75 }, ripple: { type: 'shock', size: 1.4 }, palette: 'sunset', background: { type: 'solid' }, post: { bloom: 1.2 }, wiring: { push: W('bass', 0.8), sparks: W('beat', 0.4) } }),
   def('pond', 'Pond', { form: { type: 'grid', detail: 0.35 }, render: { type: 'dots', blend: 'add', width: 4 }, ripple: { type: 'stone', size: 1.8 }, palette: 'ocean', background: { type: 'gradient' }, post: { bloom: 1.1 }, wiring: { push: W('bass', 1), sparks: W('beat', 0), warp: W('beat', 0.4), bgpulse: W('bass', 0.6) } }),
   def('mandala', 'Mandala', { form: { type: 'arches', detail: 0.4, sides: 8 }, render: { type: 'filled', width: 2.4 }, ripple: { type: 'shock', size: 1.2 }, palette: 'sunset', background: { type: 'solid' }, post: { bloom: 0.8, grain: 0.2 }, wiring: { push: W('bass', 0.5), rough: W('highs', 0.25), spin: W('mids', 0.7), sparks: W('beat', 0.3), chroma: W('beat', 0.5) } }),
+  def('sea', 'Seigaiha Sea', { form: { type: 'sea', detail: 0.4, sides: 5, fly: 0.6 }, render: { type: 'filled', width: 2.2 }, ripple: { type: 'roll', speed: 1.3, size: 1.6 }, palette: 'indigo', background: { type: 'solid' }, camera: { wander: 0.08 }, post: { bloom: 0.6, grain: 0.3, vignette: 0.75 }, wiring: { push: W('bass', 0.8), rough: W('highs', 0.15), spin: W('mids', 0.6), hue: W('none', 0), fly: W('bass', 0.8), zoom: W('beat', 0.1), sparks: W('beat', 0.2), chroma: W('beat', 0.5), warp: W('beat', 0.4) } }),
   def('echo', 'Echo Kaleido', { form: { type: 'blob', detail: 0.6 }, render: { type: 'lines', blend: 'add', width: 2.2 }, ripple: { type: 'shock' }, palette: 'acid', symmetry: { type: 'kaleido', segments: 8 }, feedback: { amount: 0.85, zoom: 0.4, twist: 0.3 }, background: { type: 'solid' }, post: { bloom: 1 }, camera: { wander: 0.35 }, wiring: { drift: W('mids', 0.5), sparks: W('beat', 0.5), chroma: W('beat', 0.8) } }),
   def('nova', 'Supernova', { form: { type: 'petals', detail: 0.8, sides: 5 }, render: { type: 'lines', blend: 'add', width: 2.4 }, ripple: { type: 'shock', size: 1.6 }, palette: 'cyber', symmetry: { type: 'kaleido', segments: 12 }, feedback: { amount: 0.75, zoom: 0.7, twist: -0.4 }, background: { type: 'stars' }, post: { bloom: 1.3, grain: 0.3 }, camera: { wander: 0.2 }, wiring: { kick: W('beat', 0.3), push: W('bass', 1.2), zoom: W('beat', 0.35), sparks: W('beat', 1), warp: W('beat', 1), chroma: W('beat', 1) } }),
   def('words', 'Words', { form: { type: 'words', detail: 0.5, fly: 0.5 }, render: { type: 'filled', width: 1.5 }, ripple: { type: 'shock', size: 1.2 }, palette: 'sunset', background: { type: 'noise' }, post: { bloom: 0.9, grain: 0.3, vignette: 0.7 }, camera: { wander: 0.15 }, wiring: { push: W('bass', 0.6), rough: W('highs', 0.5), spin: W('mids', 0.5), hue: W('mids', 0.6), zoom: W('beat', 0.15), sparks: W('beat', 0.3), chroma: W('beat', 0.6), warp: W('beat', 0.3), bgpulse: W('bass', 0.4) } }),
@@ -447,15 +450,25 @@ const opt = (...xs) => xs.map(x => Array.isArray(x) ? x : [x, x[0].toUpperCase()
 const SRC = opt('bass', 'mids', 'highs', 'beat', 'none');
 const SCHEMA = [
   ['Form', [
-    ['form.type', 'Shape', opt('blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', ['arches', 'Arch vortex'], 'words'), 'The base shape: a blob, a tunnel of rings, ridgelines, a particle cloud, a dot grid, flower petals, a vortex of rainbow arches, or words in many languages.'],
+    ['form.type', 'Shape', opt('blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', ['arches', 'Arch vortex'], ['sea', 'Seigaiha sea'], 'words'), 'The base shape: a blob, a tunnel of rings, ridgelines, a particle cloud, a dot grid, flower petals, a vortex of rainbow arches, a sea of Japanese wave scales, or words in many languages.'],
     ['form.size', 'Size', [0.3, 1.6, 0.01], 'Overall size of the shape.'],
     ['form.detail', 'Detail', [0, 1, 0.01], 'How much structure the shape has: more layers, rings, lines or points. For Words: how many smaller words float around.'],
-    ['form.sides', 'Sides / petals', [3, 12, 1], 'Number of sides on each ring, petals on the flower, or arches per ring. Only affects Rings, Petals and Arch vortex.'],
-    ['form.fly', 'Fly-through', [-2, 6, 0.1], 'Speed of travel through the ring tunnel, or of floating words drifting towards you. Negative flies backwards. Only affects Rings and Words.'],
+    ['form.sides', 'Sides / petals', [3, 12, 1], 'Number of sides on each ring, petals on the flower, arches per ring, or bands in each wave scale. Only affects Rings, Petals, Arch vortex and Seigaiha sea.'],
+    ['form.fly', 'Fly-through', [-2, 6, 0.1], 'Speed of travel through the ring tunnel, of floating words drifting towards you, or of the sea rolling in. Negative flies backwards. Only affects Rings, Words and Seigaiha sea.'],
     ['form.script', 'Words', opt(['all', 'All languages'], ['kanji', 'Kanji only']), 'All languages mixes the languages picked under Words. Kanji only shows Japanese kanji. Only affects Words.'],
     ['form.pace', 'New word every', opt([1, '1 beat'], [2, '2 beats'], [4, '4 beats'], [8, '8 beats']), 'How often the big word changes. Only affects Words.'],
     ['wiring.fly', 'Fly boost', 'wire', 'Speeds up the tunnel fly-through with the music.'],
   ], 'The base shape everything else reacts around.'],
+  ['Sea life', [
+    ['sea.boats', 'Boats', opt('off', ['oshi', 'Kabuki rowers'], ['sail', 'Cargo sail'], ['fish', 'Fisherman'], ['mix', 'Mixed fleet']), 'Woodblock-print boats on the sea. Kabuki rowers pull on the beat and strike a pose on drops; the cargo sail fills with the bass. Only on Seigaiha sea.'],
+    ['sea.fleet', 'How many boats', opt([1, '1'], [2, '2'], [3, '3']), 'How many boats are out at once.'],
+    ['sea.boatSize', 'Boat size', [0.3, 1.2, 0.05], 'Size of the boats against the waves.'],
+    ['sea.koi', 'Koi', opt('off', ['mix', 'Mixed'], 'magoi', ['higoi', 'Hi-goi'], 'kohaku', 'sanke', 'ogon'), 'Koi that leap out of the waves and dive back in with a splash. Magoi is grey-blue with gold fins, hi-goi coral, kohaku and sanke white with red (and black) patches, ogon gold. Only on Seigaiha sea.'],
+    ['wiring.leap', 'Koi leap', 'wire', 'Koi leap on each hit. Amount sets how many: about one every other hit at 0.7, one or two on every hit at 2. A drop sends up three. Most koi at once caps the total.'],
+    ['sea.koiMax', 'Most koi at once', [0, 15, 1], 'The most koi out of the water at the same time, drops included. Leaps past this wait until one dives back in. 0 keeps them all under.'],
+    ['sea.koiSize', 'Koi size', [0.4, 2, 0.05], 'Size of the koi.'],
+    ['sea.style', 'Style', opt(['print', 'Woodprint colour'], ['ink', 'Line art']), 'Woodprint colours, or line art in the colours of the sea.'],
+  ], 'Boats and leaping koi for the Seigaiha sea shape.'],
   ['Render', [
     ['render.type', 'Style', opt('lines', ['filled', 'Filled glow'], 'dots'), 'Draw the shape as lines, glowing filled layers, or dots.'],
     ['render.blend', 'Blend', opt('normal', ['add', 'Additive glow']), 'Additive glow makes overlapping parts brighten each other, for a punchier neon look.'],
@@ -470,7 +483,7 @@ const SCHEMA = [
   ['Wiring', [
     ['wiring.push', 'Push out', 'wire', 'The shape swells outward.'],
     ['wiring.rough', 'Roughness', 'wire', 'Edges get jagged and noisy.'],
-    ['wiring.spin', 'Spin', 'wire', 'The shape spins faster.'],
+    ['wiring.spin', 'Spin', 'wire', 'The shape spins faster. On Seigaiha sea, the swell rolls through the rows faster.'],
     ['wiring.hue', 'Colour shift', 'wire', 'Colours slide around the palette.'],
     ['wiring.ripple', 'Ripple', 'wire', 'Fires a ripple on each hit of the chosen sound. The style is set under Ripple.'],
   ], 'Connect the shape to the music. Each row picks a sound (bass, mids, highs or beat) and how strongly it reacts.'],
@@ -611,6 +624,19 @@ function buildForm(f, ex, ey) {
         }
       }
     }
+  } else if (f.type === 'sea') { // seigaiha: rows of wave scales, each row half a scale across from the one behind it
+    // rows sit half a radius apart, so each scale's dome covers the lower half of the scales behind it
+    const r = s * 0.3 / (0.5 + det), gap = r / 2, B = f.sides, X = ex * 1.15 + 2 * r, Y1 = ey * 1.15 + r;
+    for (let row = 0, y = -ey * 1.15 - 3 * gap; y <= Y1; row++, y += gap) { // back rows first; 2 spare rows on top for the roll
+      for (let x = -X + (row % 2) * r; x <= X; x += 2 * r) {
+        for (let b = 0; b < B; b++) { // nested bands; the outermost hides whatever is behind the whole scale
+          const rho = r * (1 - b / B), M = 8 + Math.round(rho * 120), p = path(false, 'scale', 0, 0, 0);
+          Object.assign(p, { occlude: b === 0, y0: y, gap, row });
+          for (let i = 0; i <= M; i++) { const ph = Math.PI * (1 + i / M), nx = Math.cos(ph), ny = Math.sin(ph); add(p, x + nx * rho, y + ny * rho, nx, ny, i / M, rho * 0.3, rho * 1.5); }
+        }
+      }
+    }
+    paths.sea = { r, gap, Y0: -ey * 1.15 - 3 * gap }; // for the boats and koi (SEA)
   } else { // petals: layered rose curves
     const L = 2 + Math.round(det * 3), mult = [1, 2, 1, 3, 2], extra = [0, 0, 2, 0, 1], spin = [0.25, -0.4, 0.6, -0.8, 1];
     for (let l = 0; l < L; l++) {
@@ -639,8 +665,13 @@ function deform(deck, t) {
   const evs = type === 'bloom' || rw.src === 'none' ? [] : F.events[rw.src];
   const amp = rw.amt * L.ripple.size * G.intensity;
   for (const p of deck.paths) {
-    let sc = 1, ox = st.cx, oy = st.cy;
+    let sc = 1, ox = st.cx, oy = st.cy, swell = 1;
     p.alpha = 1;
+    if (p.kind === 'scale') { // the sea rolls towards you; two rows down the pattern repeats, so it wraps seamlessly
+      const sh = (((st.travel % 2) + 2) % 2) * p.gap;
+      oy += sh; p.layer = clamp((p.y0 + sh) / deck.ey / 2 + 0.5); // 0 = back (top), 1 = front: Layer roll comes towards you
+      swell = 0.3 + 0.7 * Math.sin(p.layer * 8 - st.spin * 3) ** 2; // bands of swell rolling forward, sped up by Spin
+    }
     if (p.ring) { // perspective: rings evenly spaced in depth, scaled by 1/z, streaming towards the viewer
       const dep = (((p.phase + st.travel) % 1) + 1) % 1, par = (1 - dep) ** 1.5;
       sc = p.R / lerp(14, 1, dep);
@@ -657,7 +688,7 @@ function deform(deck, t) {
       let d = ro * p.rw[i] * sc * rough(TAU * u + seed, t), dx = 0, dy = 0, lift = 0;
       if (p.vk) { // organic forms: uneven push + a slow idle breath
         d += push * w * (0.55 + 0.45 * Math.sin(TAU * u * p.vk + p.layer * 7 + st.spin)) + 0.03 * w * Math.sin(TAU * u * 3 + t * 0.8 + p.layer * 5);
-      } else d += push * w;
+      } else d += push * w * swell;
       for (const e of evs) {
         const g = t - e.t;
         if (type === 'stone') {
@@ -685,7 +716,10 @@ function drawForm(c, deck, ghost = 0) {
   const L = deck.L, R = L.render, pal = PALETTES[L.palette], lw = R.width / deck.U, hs = wire(L, 'hue') * 50;
   c.globalCompositeOperation = R.blend === 'add' ? 'lighter' : 'source-over';
   c.lineJoin = 'round';
+  const sea = !ghost && deck.paths.sea && deck.st.sea;
+  let row;
   for (const p of deck.paths) {
+    if (sea && p.row !== row) { if (row !== undefined) SEA.row(c, deck, row); row = p.row; } // boats and koi sit between the rows
     const hue = lerp(pal.h[0], pal.h[1], p.layer) + hs, n = p.ox.length, pw = lw * (p.lw || 1);
     c.globalAlpha = p.alpha; c.lineWidth = pw;
     const style = ghost ? 'lines' : R.type === 'filled' && p.kind === 'row' ? 'dots' : R.type;
@@ -723,8 +757,345 @@ function drawForm(c, deck, ghost = 0) {
     } else c.strokeStyle = `hsla(${hue + 20},${pal.s}%,${light}%,${a})`;
     c.stroke(line);
   }
+  if (sea) { SEA.row(c, deck, row); SEA.top(c, deck); }
   c.globalAlpha = 1;
 }
+
+/* ================= sea life: woodblock boats and leaping koi on the Seigaiha sea ================= */
+// drawForm calls row() after each row of scales, so the rows in front hide the hulls and swallow the diving koi.
+// A boat or koi belongs to one row of the endless sea (n) and rolls in with it, so a row never jumps in front of it.
+// Boats and koi are drawn in their own units (1 = one scale radius * size), bow / head pointing to +x.
+const SEA = (() => {
+  let c, LK = 1, ink = false, pose = 0, bass = 0, bgc = '#000', fgc = '#fff';
+  const PRINT = { ink: '#16141d', hullTop: '#e8d6ab', hullBot: '#9c7542', plank: '#6b5130', blackTop: '#4a4252', blackBot: '#141218', sail: '#f2e9d3', sailTop: '#f7f0de', sailBot: '#c9b68d',
+  seam: '#a8986f', red: '#c0392b', wood: '#c9a86a', indigo: '#22377a', indigoHi: '#5470b8', skin: '#f7f1e6', hair: '#141218', kaki: '#c4532a', black: '#1b1820', white: '#f4eee2', kuma: '#c8262c',
+  straw: '#d9b062', mino: '#8e7238', minoTop: '#c9a65a', minoDark: '#5a4524' };
+  const inks = {}; // line-art palettes in the sea's own colours
+  const inkOf = (bg, fg) => inks[bg + fg] ||= Object.assign(Object.fromEntries(Object.keys(PRINT).map(k => [k, bg])), { ink: fg, seam: fg, wood: fg, plank: fg, minoDark: fg, white: fg, kuma: fg,
+    koi: { body: [bg, bg, bg], line: fg, scale: fg, hi: null, fin: [bg, bg], ray: fg, scales: 'crescent', spotLine: fg } });
+  // boats are drawn in their own units (1 = one scale radius), bow pointing to +x, waterline near y = 0
+  const lw = px => c.lineWidth = px * LK;
+  const line = (x0, y0, x1, y1) => { c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); };
+  const gunwale = t => [(1 - t) ** 2 * -2.5 + t * t * 2.3, (1 - t) ** 2 * -0.35 + 2 * t * (1 - t) * -0.05 + t * t * -0.55];
+  // woodblock look: flat or graded (bokashi) colour blocks, printed a hair off-register from the black key-block line
+  const REG = 1.2; // px
+  const bok = (y0, y1, a, b) => { const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, a); g.addColorStop(1, b); return g; };
+  function block(P, path, fill, px = 2.4) {
+    c.save(); c.translate(REG * LK, REG * LK); c.fillStyle = fill; c.fill(path); c.restore();
+    c.strokeStyle = P.ink; lw(px); c.stroke(path);
+  }
+  function spar(P, x0, y0, x1, y1, px) { c.strokeStyle = P.ink; lw(px + 2.4); line(x0, y0, x1, y1); c.strokeStyle = P.wood; lw(px); line(x0, y0, x1, y1); } // outlined pole
+  const curve = (x0, y0, cx, cy, x1, y1) => { c.beginPath(); c.moveTo(x0, y0); c.quadraticCurveTo(cx, cy, x1, y1); c.stroke(); };
+
+  function limb(P, x0, y0, x1, y1, w, col) { c.lineCap = 'round'; c.strokeStyle = P.ink; c.lineWidth = w + 2.4 * LK; line(x0, y0, x1, y1); c.strokeStyle = col; c.lineWidth = w; line(x0, y0, x1, y1); }
+  // a kabuki actor at the oar: oshiroi-white face with red kumadori, bold costume, red hachimaki; snaps into a mie pose on the drop.
+  // Drawn before the hull, so the rail hides everything below the waist. Returns the hands, in boat units, for the oar.
+  function drawRower(P, x, y, i, pull) {
+    const mie = pose, lean = -0.16 * pull - 0.28 * mie, kaki = i % 2 === 0, cloth = kaki ? P.kaki : P.black;
+    c.save(); c.translate(x, y + 0.08); c.rotate(lean);
+    const torso = new Path2D();
+    torso.moveTo(-0.19, 0.06); torso.lineTo(-0.21, -0.3); torso.quadraticCurveTo(-0.12, -0.46, 0.03, -0.46); torso.quadraticCurveTo(0.18, -0.44, 0.21, -0.3); torso.lineTo(0.21, 0.06); torso.closePath();
+    block(P, torso, cloth, 1.4);
+    c.save(); c.clip(torso); c.fillStyle = c.strokeStyle = P.white;
+    if (kaki) { c.lineWidth = 0.022; for (const q of [0.15, 0.1, 0.05]) c.strokeRect(-0.07 - q / 2, -0.22 - q / 2, q, q); } // mimasu crest
+    else for (let gx = 0; gx < 6; gx++) for (let gy = 0; gy < 7; gy++) if ((gx + gy) % 2) c.fillRect(-0.24 + gx * 0.08, -0.5 + gy * 0.08, 0.08, 0.08); // ichimatsu check
+    c.restore();
+    c.strokeStyle = P.white; c.lineWidth = 0.03; line(0.1, -0.44, 0.17, -0.3); // collar
+    const hx = 0.42 + 0.14 * mie, hy = -0.2 - 0.4 * mie; // reaching for the oar; thrust out towards the bow in the mie, below the face
+    limb(P, 0.05, -0.36, hx, hy, 0.085, cloth);
+    c.save(); c.translate(0.05, -0.57); c.rotate(-0.12 * pull - 0.4 * mie); // head thrown back in the mie
+    const face = new Path2D(), nose = new Path2D(), hair = new Path2D(), knot = new Path2D(), f = 0.025 * Math.sin(performance.now() / 120 + i);
+    face.ellipse(0, 0, 0.11, 0.13, 0, 0, TAU); nose.moveTo(0.1, -0.035); nose.lineTo(0.14, 0.022); nose.lineTo(0.104, 0.038); nose.closePath();
+    block(P, nose, P.skin, 1.2); block(P, face, P.skin, 1.3);
+    hair.arc(-0.008, -0.008, 0.128, Math.PI * 0.82, Math.PI * 1.66); hair.lineTo(-0.02, -0.03); hair.closePath(); block(P, hair, P.hair, 1.2); // back and crown only
+    knot.ellipse(-0.04, -0.15, 0.07, 0.032, -0.3, 0, TAU); block(P, knot, P.hair, 1.2); // topknot
+    c.lineCap = 'round'; c.strokeStyle = P.kuma; c.lineWidth = 0.024; // kumadori: red lines sweeping back from the eye to the temple and cheek
+    curve(0.06, -0.03, 0.02, -0.06, -0.035, -0.085); curve(0.06, 0.012, 0.01, 0.01, -0.045, -0.035);
+    c.strokeStyle = P.ink; c.lineWidth = 0.026; curve(0.1, -0.055, 0.05, -0.085, 0.0, -0.105); // brow flaring up
+    c.lineWidth = 0.014; curve(0.045, -0.018, 0.07, -0.026, 0.092, -0.012); // eye
+    c.strokeStyle = P.kuma; c.lineWidth = 0.016; curve(0.07, 0.078, 0.088, 0.068, 0.103, 0.082); // scowl
+    limb(P, -0.1, -0.095, 0.07, -0.112, 0.03, P.red); // hachimaki at the hairline, tails curling back
+    for (const [ty, k] of [[-0.05, 1], [-0.14, -1]]) {
+      c.lineCap = 'round'; c.strokeStyle = P.ink; c.lineWidth = 0.02 + 2.4 * LK; curve(-0.1, -0.095, -0.17, -0.095 + k * 0.05, -0.24, ty + f);
+      c.strokeStyle = P.red; c.lineWidth = 0.02; curve(-0.1, -0.095, -0.17, -0.095 + k * 0.05, -0.24, ty + f);
+    }
+    c.restore(); c.restore();
+    const cs = Math.cos(lean), sn = Math.sin(lean);
+    return [x + hx * cs - hy * sn, y + 0.08 + hx * sn + hy * cs];
+  }
+
+  function drawOshi(P, b) { // Hokusai's oshiokuri-bune: long slender hull, kabuki rowers seated inside it
+    const hull = new Path2D(), pull = Math.sin(b.phase); // one stroke every two beats
+    hull.moveTo(-2.5, -0.35); hull.quadraticCurveTo(0, -0.05, 2.3, -0.55); hull.quadraticCurveTo(2.75, -0.7, 3.0, -1.1);
+    hull.quadraticCurveTo(2.65, -0.2, 1.9, 0.25); hull.quadraticCurveTo(0, 0.45, -2.2, 0.25); hull.quadraticCurveTo(-2.6, 0.05, -2.5, -0.35); hull.closePath();
+    const seats = Array.from({ length: 6 }, (_, i) => gunwale(0.14 + i * 0.13)), hands = seats.map(([x, y], i) => drawRower(P, x, y, i, pull));
+    block(P, hull, bok(-0.6, 0.4, P.hullTop, P.hullBot), 2.6);
+    c.strokeStyle = P.plank; lw(1); for (const d of [0.15, 0.3]) curve(-2.45, -0.35 + d, 0, -0.05 + d, 2.2 - d, -0.55 + d * 0.9); // planks
+    c.strokeStyle = P.ink; lw(3.6); curve(-2.5, -0.35, 0, -0.05, 2.3, -0.55); // rail
+    seats.forEach(([x, y], i) => spar(P, hands[i][0], hands[i][1], x - 0.35 + pull * 0.4, y + 1.0 - 1.2 * pose, 1.4)); // oars over the rail, lifted out in the mie
+  }
+
+  function drawSail(P, b) { // sengokubune cargo ship, as in Hiroshige: black hull, one big sail of cloth strips
+    const hull = new Path2D(), band = new Path2D(), house = new Path2D(), sail = new Path2D(), flag = new Path2D();
+    hull.moveTo(-2.15, -1.0); hull.lineTo(-1.3, -0.8); hull.quadraticCurveTo(0.4, -0.6, 1.85, -0.85); hull.lineTo(2.5, -1.25);
+    hull.quadraticCurveTo(2.25, -0.4, 1.6, 0.2); hull.quadraticCurveTo(0, 0.4, -1.7, 0.25); hull.quadraticCurveTo(-2.2, -0.15, -2.15, -1.0); hull.closePath();
+    house.rect(-2.05, -1.45, 0.8, 0.5);
+    block(P, house, P.hullTop, 1.6);
+    c.strokeStyle = P.ink; lw(3.5); curve(-2.25, -1.4, -1.65, -1.62, -1.05, -1.4); // curved roof
+    block(P, hull, bok(-1.2, 0.4, P.blackTop, P.blackBot), 2.6);
+    c.strokeStyle = P.plank; lw(1); for (const d of [0.32, 0.5]) curve(-1.95, -0.8 + d, 0.4, -0.6 + d, 1.95 - d * 0.6, -0.85 + d);
+    band.moveTo(-1.3, -0.68); band.quadraticCurveTo(0.4, -0.48, 1.9, -0.72); band.lineTo(1.82, -0.58); band.quadraticCurveTo(0.4, -0.34, -1.3, -0.54); band.closePath();
+    block(P, band, P.sail, 1.2);
+    spar(P, 0.1, -0.7, 0.1, -4.6, 2.2); // mast
+    const top = -4.3, bot = -1.2, l = -1.15, r = 1.35, mid = (top + bot) / 2, belly = 0.25 + 0.4 * bass, N = 7; // the bass fills the sail
+    sail.moveTo(l, top); sail.lineTo(r, top); sail.quadraticCurveTo(r + belly, mid, r, bot); sail.lineTo(l, bot); sail.quadraticCurveTo(l + belly, mid, l, top); sail.closePath();
+    block(P, sail, bok(top, bot, P.sailTop, P.sailBot), 2.2);
+    c.strokeStyle = P.seam; lw(1.1);
+    for (let i = 1; i < N; i++) { const x = l + (r - l) * i / N; curve(x, top, x + belly, mid, x, bot); }
+    spar(P, l - 0.2, top, r + 0.2, top, 2.2); // yard
+    c.strokeStyle = P.seam; lw(1.1); line(0.1, -4.6, 2.5, -1.25); line(0.1, -4.6, -2.1, -1.45); // stays
+    const f = 0.12 * Math.sin(b.phase * 2);
+    flag.moveTo(0.1, -4.6); flag.quadraticCurveTo(0.6, -4.75 + f, 1.15, -4.5 + f); flag.lineTo(0.1, -4.35); flag.closePath();
+    block(P, flag, P.red, 1.4);
+  }
+
+  function drawFish(P, b) { // a small skiff; the fisherman wears a straw rain cape (mino) and a woven hat, pole out over the bow
+    const hull = new Path2D(), legs = new Path2D(), cape = new Path2D(), head = new Path2D(), hat = new Path2D(), sway = 0.12 * Math.sin(b.phase);
+    hull.moveTo(-1.4, -0.35); hull.quadraticCurveTo(0, -0.15, 1.25, -0.5); hull.quadraticCurveTo(1.5, -0.6, 1.65, -0.85);
+    hull.quadraticCurveTo(1.4, -0.1, 0.9, 0.2); hull.quadraticCurveTo(0, 0.35, -1.2, 0.2); hull.quadraticCurveTo(-1.5, 0, -1.4, -0.35); hull.closePath();
+    c.save(); c.translate(-0.45, -0.28); c.rotate(sway * 0.3); c.scale(0.72, 0.72); // figure about a third of the hull
+    spar(P, 0.15, -1.0, 3.3, -3.2 + sway, 1.6); // bamboo pole
+    c.strokeStyle = P.seam; lw(1); curve(3.3, -3.2 + sway, 3.5, -1.6, 3.4 + sway, 0.9); // line into the water
+    legs.moveTo(-0.24, 0.1); legs.lineTo(-0.14, -0.7); legs.lineTo(0.2, -0.7); legs.lineTo(0.3, 0.1); legs.closePath();
+    block(P, legs, P.indigo, 1.5);
+    cape.moveTo(-0.24, -1.22); cape.lineTo(0.3, -1.22);
+    for (let i = 0; i <= 8; i++) cape.lineTo(0.46 - i * 0.115, -0.5 + (i % 2 ? -0.09 : 0.03)); // ragged straw hem
+    cape.closePath();
+    block(P, cape, bok(-1.22, -0.5, P.minoTop, P.mino), 1.5);
+    c.strokeStyle = P.minoDark; lw(0.9); for (let i = 0; i < 7; i++) line(-0.28 + i * 0.1, -1.12, -0.32 + i * 0.12, -0.6);
+    head.arc(0.03, -1.32, 0.12, 0, TAU); block(P, head, P.skin, 1.4);
+    hat.moveTo(-0.55, -1.38); hat.quadraticCurveTo(0.03, -1.45, 0.61, -1.38); hat.lineTo(0.03, -1.8); hat.closePath();
+    block(P, hat, bok(-1.8, -1.38, P.minoTop, P.straw), 1.5);
+    c.strokeStyle = P.minoDark; lw(0.9); for (let i = 1; i < 6; i++) line(0.03, -1.78, -0.55 + i * 0.193, -1.41); // weave
+    c.restore();
+    block(P, hull, bok(-0.85, 0.3, P.hullTop, P.hullBot), 2.6);
+    c.strokeStyle = P.plank; lw(1); curve(-1.35, -0.18, 0, 0.02, 1.2, -0.3);
+    c.strokeStyle = P.ink; lw(3.4); curve(-1.4, -0.35, 0, -0.15, 1.25, -0.5);
+  }
+
+  // koi after the reference prints: magoi (grey-blue, gold fins), hi-goi (Toyokuni's coral carp, red linework),
+  // kohaku and sanke (white, flat red / black patches, net scales, pale rayed fins), ogon (gold, black spots)
+  const KOI = {
+    magoi: { body: ['#46597a', '#8a9cb3', '#e6e8e2'], line: '#1b2030', scale: '#24304a', hi: '#c3cedb', fin: ['#c39a52', '#efdfb4'], ray: '#7e5f27', scales: 'crescent' },
+    higoi: { body: ['#c9432b', '#e86a4b', '#fbd3bc'], line: '#8a2414', scale: '#9e2c1b', hi: '#f8b090', fin: ['#ea825f', '#fde4d3'], ray: '#bd4a2b', scales: 'crescent' },
+    kohaku: { body: ['#ece6da', '#f5f1e8', '#fbfaf5'], line: '#3a3438', scale: '#6b6468', fin: ['#a9bfc7', '#eef4f3'], ray: '#6f8c96', scales: 'net', red: 3 },
+    sanke: { body: ['#ece6da', '#f5f1e8', '#fbfaf5'], line: '#2e292d', scale: '#6b6468', fin: ['#a9bfc7', '#eef4f3'], ray: '#6f8c96', scales: 'net', red: 2, black: 3 },
+    ogon: { body: ['#bf9a3c', '#dcc068', '#f2e4b0'], line: '#3d2f14', scale: '#6f561f', fin: ['#cfb15f', '#f4e7bf'], ray: '#8d722e', scales: 'net', black: 2 },
+  };
+  const koiW = s => 0.07 + 0.36 * Math.sin(Math.PI * s ** 0.75) * (1 - 0.4 * s); // half-width, s = 0 at the snout .. 1 at the tail root
+  function koiFrame(f) { // the spine ripples in an S-curve from head to tail; returns (s, v) -> [x, y, heading], v = -1 belly .. 1 back
+    const pts = [];
+    for (let i = 0; i <= 32; i++) { const s = i / 32; pts.push([1 - 2 * s, 0.24 * s ** 1.4 * Math.sin(s * 3.4 - f.t * 9 + f.seed)]); }
+    return (s, v = 0) => {
+      s = clamp(s); const i = Math.min(31, Math.floor(s * 32)), u = s * 32 - i, A = pts[i], B = pts[i + 1];
+      const tx = A[0] - B[0], ty = A[1] - B[1], l = Math.hypot(tx, ty), w = koiW(s) * v;
+      return [A[0] + (B[0] - A[0]) * u + ty / l * w, A[1] + (B[1] - A[1]) * u - tx / l * w, Math.atan2(ty, tx)];
+    };
+  }
+  function koiFin(k, b0, b1, edge, rays) { // a fin of fine rays, fading to a pale edge
+    const path = new Path2D(), m = [(b0[0] + b1[0]) / 2, (b0[1] + b1[1]) / 2];
+    path.moveTo(b0[0], b0[1]); path.lineTo(edge[0][0], edge[0][1]);
+    for (let i = 1; i < edge.length - 1; i++) path.quadraticCurveTo(edge[i][0], edge[i][1], (edge[i][0] + edge[i + 1][0]) / 2, (edge[i][1] + edge[i + 1][1]) / 2);
+    path.lineTo(edge.at(-1)[0], edge.at(-1)[1]); path.lineTo(b1[0], b1[1]); path.closePath();
+    const g = c.createRadialGradient(m[0], m[1], 0, m[0], m[1], Math.max(...edge.map(e => Math.hypot(e[0] - m[0], e[1] - m[1]))));
+    g.addColorStop(0, k.fin[0]); g.addColorStop(1, k.fin[1]); c.fillStyle = g; c.fill(path);
+    c.strokeStyle = k.ray; lw(0.7);
+    for (let r = 1; r < rays; r++) {
+      const u = r / rays, e = u * (edge.length - 1), j = Math.min(edge.length - 2, Math.floor(e)), q = e - j;
+      line(b0[0] + (b1[0] - b0[0]) * u, b0[1] + (b1[1] - b0[1]) * u, edge[j][0] + (edge[j + 1][0] - edge[j][0]) * q, edge[j][1] + (edge[j + 1][1] - edge[j][1]) * q);
+    }
+    c.strokeStyle = k.line; lw(1.2); c.stroke(path);
+  }
+  function drawCarp(k, f) { // head to +x
+    const P = koiFrame(f), up = (s, h) => P(s, 1 + h / koiW(s)), dn = (s, h) => P(s, -1 - h / koiW(s)), flap = 0.06 * Math.sin(f.t * 12 + f.seed);
+    // fins behind the body: tail, dorsal, pelvic, anal
+    const [rx, ry, ra] = P(1), tail = (x, y) => { const a = ra + Math.PI + f.flick, cs = Math.cos(a), sn = Math.sin(a); return [rx + x * cs - y * sn, ry + x * sn + y * cs]; };
+    koiFin(k, tail(0, -0.07), tail(0, 0.07), [[0.38, -0.3], [0.98, -0.68], [0.74, -0.24], [0.58, 0], [0.74, 0.24], [0.98, 0.68], [0.38, 0.3]].map(([x, y]) => tail(x, y)), 16);
+    koiFin(k, up(0.3, -0.02), up(0.64, -0.02), [up(0.3, 0.05), up(0.34, 0.38), up(0.46, 0.3), up(0.58, 0.17), up(0.66, 0.04)], 9);
+    koiFin(k, dn(0.52, -0.02), dn(0.6, -0.02), [dn(0.53, 0.05), dn(0.6, 0.22), dn(0.65, 0.14), dn(0.62, 0.02)], 5);
+    koiFin(k, dn(0.76, -0.02), dn(0.84, -0.02), [dn(0.77, 0.04), dn(0.84, 0.17), dn(0.88, 0.1), dn(0.86, 0.01)], 4);
+    // body: graded from back to belly, snout rounded off
+    const body = new Path2D();
+    for (let i = 0; i <= 32; i++) { const [x, y] = P(i / 32, 1); i ? body.lineTo(x, y) : body.moveTo(x, y); }
+    for (let i = 32; i >= 0; i--) { const [x, y] = P(i / 32, -1); body.lineTo(x, y); }
+    const [sx, sy, sa] = P(0), [tx, ty] = P(0, 1); body.quadraticCurveTo(sx + Math.cos(sa) * 0.17, sy + Math.sin(sa) * 0.17, tx, ty);
+    const [gx0, gy0] = P(0.4, 1), [gx1, gy1] = P(0.4, -1), g = c.createLinearGradient(gx0, gy0, gx1, gy1);
+    g.addColorStop(0, k.body[0]); g.addColorStop(0.45, k.body[1]); g.addColorStop(1, k.body[2]);
+    c.fillStyle = g; c.fill(body);
+    c.save(); c.clip(body);
+    for (const sp of f.spots) { // flat patches, printed in one colour like the kohaku in the prints
+      const [x, y, a] = P(sp.s, sp.v), w = koiW(sp.s) * sp.r;
+      c.save(); c.translate(x, y); c.rotate(a); c.scale(1.7 * w, w);
+      c.beginPath(); sp.wob.forEach((j, i) => { const t = i / sp.wob.length * TAU; c[i ? 'lineTo' : 'moveTo'](Math.cos(t) * j, Math.sin(t) * j); }); c.closePath();
+      c.restore();
+      if (k.spotLine) { c.strokeStyle = k.spotLine; lw(1); c.stroke(); } else { c.fillStyle = sp.col; c.fill(); }
+    }
+    c.strokeStyle = k.scale;
+    if (k.scales === 'crescent') { // overlapping half-moon scales, tail first so each one tucks under the one ahead of it
+      for (let s = 0.97, col = 0; s > 0.22; col++) {
+        const rr = koiW(s) * 0.3;
+        for (let j = 0; j < 7; j++) {
+          const v = -1 + (j + 0.5 + (col % 2) * 0.5) / 7 * 2; if (v > 1) continue;
+          const [x, y, a] = P(s, v);
+          c.beginPath(); c.arc(x, y, rr, a + Math.PI / 2, a + Math.PI * 1.5); c.closePath(); c.fillStyle = g; c.fill();
+          lw(0.9); c.beginPath(); c.arc(x, y, rr, a + Math.PI / 2, a + Math.PI * 1.5); c.stroke();
+          if (k.hi) { c.strokeStyle = k.hi; lw(0.8); c.beginPath(); c.arc(x, y, rr * 0.6, a + Math.PI * 0.75, a + Math.PI * 1.25); c.stroke(); c.strokeStyle = k.scale; }
+        }
+        s -= rr * 0.5;
+      }
+    } else { // net of fine crossing lines, as on the pond koi
+      lw(0.8); c.globalAlpha = 0.8;
+      for (const sg of [1, -1]) for (let o = -0.3; o < 1.3; o += 0.075) {
+        c.beginPath(); let on = false;
+        for (let s = 0.2; s <= 1; s += 0.02) { const v = sg * (s - o) * 9; if (Math.abs(v) > 1) { on = false; continue; } const [x, y] = P(s, v); c[on ? 'lineTo' : 'moveTo'](x, y); on = true; }
+        c.stroke();
+      }
+      c.globalAlpha = 1;
+    }
+    c.restore();
+    // head: gill plate, ringed eye, mouth and long curling barbels
+    c.strokeStyle = k.line; lw(1.4);
+    const [ax, ay] = P(0.19, 0.92), [bx, by] = P(0.27, 0), [cx2, cy2] = P(0.19, -0.92); curve(ax, ay, bx, by, cx2, cy2);
+    const [ex2, ey2] = P(0.085, 0.3);
+    c.fillStyle = ink ? bgc : '#f8f2e4'; c.beginPath(); c.arc(ex2, ey2, 0.068, 0, TAU); c.fill(); lw(1.3); c.stroke();
+    c.fillStyle = ink ? fgc : '#141014'; c.beginPath(); c.arc(ex2 + Math.cos(sa) * 0.012, ey2 + Math.sin(sa) * 0.012, 0.036, 0, TAU); c.fill();
+    const [mx, my] = P(0.015, -0.6), wig = 0.04 * Math.sin(f.t * 7 + f.seed);
+    c.save(); c.translate(mx, my); c.rotate(sa); lw(1.1);
+    c.beginPath(); c.moveTo(0.02, 0); c.bezierCurveTo(0.14, 0.04, 0.16 + wig, 0.2, 0.05, 0.24); c.quadraticCurveTo(-0.01, 0.25, 0.01, 0.2); c.stroke();
+    c.beginPath(); c.moveTo(0, 0.01); c.bezierCurveTo(0.05, 0.12, -0.02, 0.28 + wig, -0.12, 0.24); c.stroke();
+    c.restore();
+    c.strokeStyle = k.line; lw(1.7); c.stroke(body);
+    // near pectoral fin, over the body
+    koiFin(k, P(0.24, -0.45), P(0.3, -0.8), [dn(0.27, 0.02), dn(0.31, 0.3 + flap), dn(0.42, 0.38 + flap), dn(0.47, 0.2)], 8);
+  }
+  const KOI_KINDS = Object.keys(KOI);
+  function koiSpots(kind) { // where the patches sit, in body coordinates
+    const K = KOI[kind], out = [], blob = (s, v, r, col) => out.push({ s, v, r, col, wob: Array.from({ length: 14 }, () => rand(0.75, 1.15)) });
+    if (K.red) { blob(rand(0.02, 0.12), rand(0.2, 0.6), rand(0.7, 1.0), '#e2371d'); for (let i = 1; i < K.red; i++) blob(rand(0.3, 0.8), rand(0.15, 0.6), rand(0.8, 1.3), '#e2371d'); }
+    for (let i = 0; i < (K.black || 0); i++) blob(rand(0.3, 0.9), rand(-0.1, 0.8), rand(0.25, 0.45), '#16131a');
+    return out;
+  }
+
+  const TYPES = { oshi: { len: 2.8, draw: drawOshi }, sail: { len: 2.3, draw: drawSail }, fish: { len: 1.5, draw: drawFish } };
+  const rowOf = (n, travel) => n + 2 * Math.floor(travel / 2); // the built row that sea row n is showing as (the rows wrap every 2)
+  const rowY = (d, n) => d.paths.sea.Y0 + (n + d.st.travel) * d.paths.sea.gap;
+  const swellAt = (d, y) => { const th = clamp(y / d.ey / 2 + 0.5) * 8 - d.st.spin * 3; return { k: 0.3 + 0.7 * Math.sin(th) ** 2, slope: Math.sin(2 * th) }; }; // as in deform()
+  const boatK = d => d.paths.sea.r * d.L.sea.boatSize;
+  const boatAt = (d, b) => { const y = rowY(d, b.n), sw = swellAt(d, y), k = boatK(d);
+    return { x: b.x, y: y - d.paths.sea.r * 0.45 - 0.05 * k - (0.12 * sw.k + 0.08 * F.beat) * k, a: 0.06 * sw.slope * b.dir }; };
+  const koiAt = (d, f) => ({ x: f.x + f.vx * f.t, y: rowY(d, f.n) - d.paths.sea.r * 0.3 - (f.vy * f.t - 1.1 * f.t * f.t) }); // gravity 2.2
+
+  function splash(d, s, x, n) {
+    const y = rowY(d, n) - d.paths.sea.r * 0.35;
+    s.rings.push({ x, n, t: 0 });
+    for (let i = 0; i < 14; i++) s.spray.push({ x, y, vx: rand(-0.35, 0.35), vy: -rand(0.4, 1.1), life: 1, sz: rand(0.004, 0.012) });
+  }
+  function leap(d, s, strength) { // from between two scales, arcing up and diving back into the same row
+    if (s.koi.length >= d.L.sea.koiMax) return; // caps drops too
+    const cf = d.L.sea, y = rand(-d.ey * 0.4, d.ey * 0.6), dir = Math.random() < 0.5 ? 1 : -1, kind = cf.koi === 'mix' ? pick(KOI_KINDS) : cf.koi;
+    const f = { n: Math.round((y - d.paths.sea.Y0) / d.paths.sea.gap - d.st.travel), x: rand(-d.ex * 0.8, d.ex * 0.8), vx: dir * rand(0.25, 0.45), vy: 0.9 + 0.5 * strength,
+      t: 0, dir, flick: 0, size: rand(0.5, 0.72) * cf.koiSize, kind, seed: rand(0, TAU), spots: koiSpots(kind) };
+    s.koi.push(f); splash(d, s, f.x, f.n);
+  }
+
+  function update(d, t, dt) {
+    const L = d.L, st = d.st, cf = L.sea, ex = d.ex * 1.15, ey = d.ey, r = d.paths.sea.r;
+    const s = st.sea ||= { boats: [], koi: [], spray: [], rings: [], beat: t, leap: t, drop: -9, stroke: 0, strokeTo: 0, fresh: true };
+    const half = b => TYPES[b.type].len * boatK(d);
+    // rowers pull half a stroke per beat, and spray flies off the bows
+    const be = F.events.beat.at(-1);
+    if (be && be.t > s.beat) {
+      s.beat = be.t; s.strokeTo += Math.PI;
+      for (const b of s.boats) {
+        const p = boatAt(d, b), bx = p.x + b.dir * half(b), by = p.y - 0.3 * boatK(d);
+        for (let i = 0; i < 10; i++) s.spray.push({ x: bx, y: by, vx: b.dir * rand(0.05, 0.4), vy: -rand(0.3, 0.8), life: 1, sz: rand(0.004, 0.011) });
+      }
+    }
+    if (t - F.lastBeat > 2) s.strokeTo += dt * 1.2; // no beat: row on slowly
+    s.stroke += (s.strokeTo - s.stroke) * (1 - Math.exp(-dt / 0.15));
+    // koi leap on the wired hits (Amount sets how many); a drop sends up three and the kabuki rowers strike a mie
+    const wl = L.wiring.leap, le = cf.koi !== 'off' && wl.src !== 'none' && F.events[wl.src].at(-1);
+    if (le && le.t > s.leap) { s.leap = le.t; for (let n = Math.floor(wl.amt * G.intensity * 0.75 + Math.random()); n > 0; n--) leap(d, s, 0.4); }
+    if (F.drop) { s.drop = t; if (cf.koi !== 'off') for (let i = 0; i < 3; i++) leap(d, s, 1); }
+    // boats: on screen from the start, then new ones sail in from the sides
+    const want = cf.boats === 'off' ? 0 : cf.fleet;
+    const spawn = (i, start) => {
+      const type = cf.boats === 'mix' ? ['oshi', 'sail', 'fish'][i % 3] : cf.boats, dir = Math.random() < 0.5 ? 1 : -1;
+      const y = start ? -ey * 0.45 + i * ey * 0.5 : rand(-ey * 0.6, 0), b = { type, dir, n: Math.round((y - d.paths.sea.Y0) / d.paths.sea.gap - st.travel), v: rand(0.1, 0.16), off: rand(0, TAU) };
+      b.x = start ? rand(-ex * 0.45, ex * 0.45) : dir > 0 ? -ex - half(b) : ex + half(b);
+      return b;
+    };
+    const gone = b => (b.dir > 0 ? b.x - half(b) > ex : b.x + half(b) < -ex) || Math.abs(rowY(d, b.n)) > ey + r * 2 || (cf.boats !== 'mix' && b.type !== cf.boats);
+    for (const b of s.boats) b.x += b.dir * b.v * dt;
+    s.boats = s.boats.slice(0, want).map((b, i) => gone(b) ? spawn(i, false) : b);
+    while (s.boats.length < want) s.boats.push(spawn(s.boats.length, s.fresh));
+    s.fresh = false;
+    for (const f of s.koi) { // splash where it dives back in; gone once it is deep below the waves
+      const was = f.vy * f.t - 1.1 * f.t * f.t > 0;
+      f.t += dt; f.flick = 0.3 * Math.sin(f.t * 9 + f.seed - 3.4);
+      const h = f.vy * f.t - 1.1 * f.t * f.t;
+      if (was && h <= 0) splash(d, s, koiAt(d, f).x, f.n);
+      f.done = h < -r * 1.5 || (cf.koi !== 'off' && cf.koi !== 'mix' && f.kind !== cf.koi && f.t < 0.05);
+    }
+    if (cf.koi === 'off') s.koi = [];
+    s.koi = s.koi.filter(f => !f.done);
+    for (const g of s.rings) g.t += dt;
+    s.rings = s.rings.filter(g => g.t < 1);
+    s.spray = s.spray.filter(p => (p.life -= dt * 1.4) > 0);
+    for (const p of s.spray) { p.vy += dt * 1.6; p.x += p.vx * dt; p.y += p.vy * dt; }
+    const held = t - s.drop;
+    pose = held < 1.1 ? 1 : Math.exp(-(held - 1.1) * 4); // snap into the pose, hold it, release
+    s.pose = pose;
+  }
+
+  function begin(cx, d) { // colours: woodprint, or line art in the look's own palette
+    const L = d.L, pal = PALETTES[L.palette], hs = wire(L, 'hue') * 50;
+    c = cx; ink = L.sea.style === 'ink'; pose = d.st.sea.pose; bass = F.bass;
+    bgc = pal.bg; fgc = `hsl(${pal.h[1] + 20 + hs},${pal.s}%,${Math.min(92, pal.l + 15)}%)`;
+    c.save(); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; c.lineJoin = 'round'; c.lineCap = 'butt';
+    return ink ? inkOf(bgc, fgc) : PRINT;
+  }
+  function row(cx, d, built) { // everything that belongs to built row `built`, drawn right after it
+    const s = d.st.sea; if (!s) return;
+    const st = d.st, P = begin(cx, d);
+    for (const g of s.rings) if (rowOf(g.n, st.travel) === built) {
+      const y = rowY(d, g.n) - d.paths.sea.r * 0.3 + st.cy;
+      c.strokeStyle = fgc; c.lineWidth = 2 / d.U;
+      for (let i = 0; i < 2; i++) { const a = g.t - i * 0.15, w = 0.05 + a * 0.5; if (a <= 0) continue; c.globalAlpha = clamp(1 - a * 1.6); c.beginPath(); c.ellipse(g.x + st.cx, y, w, w * 0.28, 0, Math.PI, TAU); c.stroke(); }
+      c.globalAlpha = 1;
+    }
+    for (const b of s.boats) if (rowOf(b.n, st.travel) === built) {
+      const p = boatAt(d, b), k = boatK(d);
+      c.save(); c.translate(p.x + st.cx, p.y + st.cy); c.rotate(p.a); c.scale(b.dir * k, k); LK = 1 / (d.U * k);
+      TYPES[b.type].draw(P, { phase: s.stroke + b.off });
+      c.restore();
+    }
+    for (const f of s.koi) if (rowOf(f.n, st.travel) === built) {
+      const p = koiAt(d, f), a = Math.atan2(-(f.vy - 2.2 * f.t), Math.abs(f.vx)), k = d.paths.sea.r * f.size;
+      c.save(); c.translate(p.x + st.cx, p.y + st.cy); c.scale(f.dir, 1); c.rotate(a); c.scale(k, k); LK = 1 / (d.U * k);
+      drawCarp(ink ? P.koi : KOI[f.kind], f);
+      c.restore();
+    }
+    c.restore();
+  }
+  function top(cx, d) { // spray, over everything
+    const s = d.st.sea; if (!s || !s.spray.length) return;
+    begin(cx, d); c.fillStyle = fgc;
+    for (const p of s.spray) { c.globalAlpha = p.life; c.beginPath(); c.arc(p.x + d.st.cx, p.y + d.st.cy, p.sz, 0, TAU); c.fill(); }
+    c.restore();
+  }
+  return { update, row, top, rowOf, kinds: KOI_KINDS, spots: koiSpots };
+})();
 
 // beat-triggered sparks flung outward from the shape's points, with drag; drawn in unit space
 function drawSparks(S, d, dt) {
@@ -1393,7 +1764,7 @@ function renderDeck(d, t, dt, w, h, dpr) {
   st.spin += dt * st.spinRate;
   st.drift += dt * wire(L, 'drift') * 0.2;
   st.fly = ease(st.fly, L.form.fly + wire(L, 'fly'), 1);
-  st.travel += dt * st.fly / Math.max(1, d.paths.length); // rings per second
+  st.travel += dt * st.fly / (d.paths[0]?.ring ? d.paths.length : 1); // rings per second; sea rows per second
   // wandering centre: follows a slow Lissajous path; beats nudge it aside and the nudge fades out
   st.wt += dt * L.camera.wanderSpeed;
   const A = L.camera.wander * 0.6, k = L.wiring.kick, kev = k.src !== 'none' && F.events[k.src].at(-1);
@@ -1410,6 +1781,7 @@ function renderDeck(d, t, dt, w, h, dpr) {
   st.zoom = ease(st.zoom, wire(L, 'zoom'), wire(L, 'zoom') > st.zoom ? 0.12 : 0.6);
   const words = L.form.type === 'words';
   if (!words) deform(d, t);
+  if (d.paths.sea) SEA.update(d, t, dt);
 
   // 1. background, with trails or feedback echo of the previous frame
   const fbAmt = L.feedback.amount;
@@ -1820,7 +2192,7 @@ function cycleTheme() {
 function randomLook() {
   const fresh = sanitize(merge(clone(BASE), {
     id: 'random', name: '🎲 Random',
-    form: { type: pick(['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches', 'words']), size: rand(0.7, 1.2), detail: Math.random(), sides: pick([3, 4, 5, 6, 8]), fly: rand(0, 3), script: pick(['all', 'all', 'kanji']) },
+    form: { type: pick(['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches', 'sea', 'words']), size: rand(0.7, 1.2), detail: Math.random(), sides: pick([3, 4, 5, 6, 8]), fly: rand(0, 3), script: pick(['all', 'all', 'kanji']) },
     render: { type: pick(['lines', 'filled', 'dots']), blend: pick(['normal', 'add']), width: rand(1, 3), trails: pick([0, 0, 0.5, 0.8]) },
     ripple: { type: pick(['rim', 'shock', 'stone', 'roll', 'bloom']), speed: rand(0.6, 1.6), size: rand(0.8, 1.6) },
     palette: pick(Object.keys(PALETTES)),
@@ -2056,10 +2428,16 @@ function selfTest() {
   const junk = sanitize(JSON.parse('{"palette":"nope","form":{"size":99,"type":"x"},"wiring":{"push":{"src":"evil","amt":9},"spin":"bad"},"__proto__":{"polluted":1}}'));
   if (junk.palette !== 'aurora' || junk.form.size !== 1.6 || junk.form.type !== 'blob' || junk.wiring.push.src !== 'none' || junk.wiring.push.amt !== 2
     || junk.wiring.spin.src !== 'mids' || ({}).polluted || junk.polluted) fails.push('sanitize let junk through');
-  for (const type of ['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches']) {
+  for (const type of ['blob', 'rings', 'ridges', 'cloud', 'grid', 'petals', 'arches', 'sea']) {
     const ps = buildForm({ ...BASE.form, type }, 1.6, 1);
     if (!ps.length || ps.some(p => !p.ox.length || p.rmax !== p.rmax)) fails.push('form builds empty/NaN: ' + type);
   }
+  // the sea's roll wraps every 2 rows, so every scale must land on another one 2 rows down
+  const sea = buildForm({ ...BASE.form, type: 'sea' }, 1.6, 1).filter(p => p.occlude), g2 = 2 * sea[0].gap, at = (x, y) => Math.round(x * 1e4) + ',' + Math.round(y * 1e4);
+  const seaAt = new Set(sea.map(p => at(p.bx[0], p.y0))), seaLow = Math.max(...sea.map(p => p.y0)) - g2 - 1e-9;
+  if (sea.some(p => p.y0 < seaLow && !seaAt.has(at(p.bx[0], p.y0 + g2)))) fails.push('sea pattern does not repeat 2 rows down');
+  for (const tr of [-3.3, -0.5, 0, 1.7, 2, 5.9]) if (Math.abs(SEA.rowOf(7, tr) + (((tr % 2) + 2) % 2) - (7 + tr)) > 1e-9) fails.push('sea row mapping wrong at travel ' + tr);
+  if (SEA.kinds.some(k => SEA.spots(k).some(sp => !Number.isFinite(sp.s + sp.v + sp.r)))) fails.push('koi patches not finite');
   for (const [id, th] of Object.entries(THEMES)) if (th.patch) {
     const m = merge(merge(clone(BASE), { id: 't', name: 't' }), th.patch);
     if (JSON.stringify(sanitize(clone(m))) !== JSON.stringify(m) || (th.texture && !MOMENTS[th.texture])) fails.push('theme has invalid values: ' + id);
