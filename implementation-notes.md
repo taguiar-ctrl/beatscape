@@ -84,6 +84,7 @@ The six prototypes become built-in looks. Users can save their own looks; built-
 12. **Burn transition fixed.** Its blend ran backwards: it started on the new look, burned towards the old one, then snapped to the new one when it ended.
 13. **A zero-size window no longer freezes the visuals.** If the page loaded hidden (0×0), `drawForm` threw on a non-finite gradient, and the animation loop stopped for good. Frames are now skipped until the window has a size.
 14. **Words: the new built-ins are not added to existing sets.** A fresh install puts them in the Main set; on an existing library, tick Words and Kanji to add them.
+15. **The visuals recover from a lost GPU context.** A GPU reset, sleep/wake or a GPU switch can drop the WebGL context. Before, the screen then stayed black until a reload. Now the page asks for the context back, shows black while it is gone, and rebuilds the post-FX pass when the browser restores it. Tested by forcing a loss and a restore with `WEBGL_lose_context`. Limit: if Chrome refuses to restore it, for example after repeated GPU crashes, the page still needs a reload.
 
 ## Verification (2026-10-09, in the built-in browser using the demo signal)
 - **Self-test passes** (`selfTest()` in the console, or open with `#test`). It checks:
