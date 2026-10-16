@@ -6,6 +6,7 @@
   - Big word: defaults are `pace: 2` beats for Words and `pace: 4` for Kanji (`visualizer.html`, `def('words', …)` / `def('kanji', …)`; the base default is in `form` near line 397). Raise both, likely to 8, and consider adding a 16-beat option to the **New word every** control. Also check the no-beat fallback timer in `drawWords()` (`f.pace * 0.5` seconds), so quiet passages slow down too.
   - Small words: right now one fades in per beat and lives 4–8 beats. Make them snappier, with shorter lives and a pop on beats or loud moments, so the motion comes from the background while the big word holds.
 - [ ] **Mandala: fill the empty black space.** The arch vortex sits in the middle and leaves a lot of black around it. Add stylish circles around it in the look's own style, such as smaller arch rings or seigaiha-style medallions in the same palette, that react to the music. Built-in: `def('mandala', …)` with form `arches` in `visualizer.html`.
+- [ ] **Seigaiha Sea: waves bounce too much.** Small fix: calm the motion of the scales. The likely sources are in the built-in `def('sea', …)` in `visualizer.html`: Push on the bass at 0.8 (multiplied by the rolling swell bands in `deform()`), the Roll ripple at size 1.6, plus beat Zoom (0.1) and Warp (0.4). Lower Push and the ripple size first, then check that the boats and koi still ride the swell nicely.
 
 ## Japanese-inspired visuals (unsorted)
 
