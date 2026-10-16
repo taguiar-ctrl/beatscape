@@ -1679,6 +1679,10 @@ function initPost(gl) {
 let gl = view.getContext('webgl2', { alpha: false, antialias: false }), postU = null;
 try { if (gl) postU = initPost(gl); } catch (e) { console.warn('Post FX off:', e); }
 const v2d = gl ? null : view.getContext('2d', { alpha: false }); // no WebGL2: plain crossfades, no post FX
+// GPU reset, sleep/wake or GPU switch loses the context: ask for it back, skip drawing meanwhile, rebuild the pass when it returns
+// ponytail: if Chrome refuses to restore (repeated GPU crashes) the screen stays black until a reload; a fresh canvas with the 2D fallback would cover that
+view.addEventListener('webglcontextlost', e => { e.preventDefault(); postU = null; });
+view.addEventListener('webglcontextrestored', () => { try { postU = initPost(gl); } catch (e) { console.warn('Post FX off:', e); } });
 const postOf = L => ({
   bloom: Math.min(2.5, L.post.bloom * G.intensity + wire(L, 'bloom')), // capped: glow surges, never a full-screen flash
   chroma: Math.min(2, wire(L, 'chroma')), grain: L.post.grain, vignette: L.post.vignette,
@@ -1691,11 +1695,12 @@ const upload = (unit, src) => {
 };
 function present(t, CW, CH, f) {
   if (!postU) { // fallback: crossfade on a 2D canvas
+    if (!v2d) return; // WebGL context lost: nothing to draw on until it's restored
     cctx.globalAlpha = 1;
     cctx.fillStyle = '#000'; cctx.fillRect(0, 0, CW, CH);
     if (fade) { cctx.drawImage(decks[fade.from].canvas, 0, 0); cctx.globalAlpha = f; }
     cctx.drawImage(decks[live].canvas, 0, 0);
-    v2d?.drawImage(comp, 0, 0);
+    v2d.drawImage(comp, 0, 0);
     return;
   }
   gl.viewport(0, 0, CW, CH);
